@@ -90,7 +90,11 @@ public class BlockJoinParentQParser extends FiltersQParser {
     SolrCache<Query, BitSetProducer> parentCache = request.getSearcher().getCache(CACHE_NAME);
     // lazily retrieve from solr cache
     if (parentCache != null) {
-      return parentCache.computeIfAbsent(query, QueryBitSetProducer::new);
+        try {
+          return parentCache.computeIfAbsent(query, QueryBitSetProducer::new);
+        } catch (IOException ignored) {
+          throw new AssertionError("Can't happen");
+        }
     } else {
       return new QueryBitSetProducer(query);
     }
