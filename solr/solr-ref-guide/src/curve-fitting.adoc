@@ -68,9 +68,9 @@ If only one vector of numbers is passed, `gaussfit` will treat it as the y-axis 
 One of the interesting use cases for `gaussfit` is to visualize how well a regression model's residuals fit a normal distribution.
 
 One of the characteristics of a well-fit regression model is that its residuals will ideally fit a normal distribution.
-We can test this by building a histogram of the residuals and then fitting a gaussian curve to the curve of the histogram.
+We can test this by building a randomDataHistogram of the residuals and then fitting a gaussian curve to the curve of the randomDataHistogram.
 
-In the example below the residuals from a `polyfit` regression are modeled with the `hist` function to return a histogram with 32 bins.
+In the example below the residuals from a `polyfit` regression are modeled with the `hist` function to return a randomDataHistogram with 32 bins.
 The `hist` function returns a list of tuples with statistics about each bin.
 In the example the `col` function is used to return a vector with the `N` column for each bin, which is the count of observations in the
 bin.
