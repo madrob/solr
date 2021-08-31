@@ -72,19 +72,25 @@ public class IntegersDSL {
    * @return a SolrGen that returns an int greater than the previous
    */
   public SolrGen<Integer> incrementing() {
-    return new SolrGen<>(Integer.class) {
-      AtomicInteger increment = new AtomicInteger();
+    return new IncrementingIntegerSolrGen();
+  }
 
-      @Override
-      public Integer generate(RandomnessSource in) {
-        return increment.getAndIncrement();
-      }
+  private static class IncrementingIntegerSolrGen extends SolrGen<Integer> {
+    AtomicInteger increment = new AtomicInteger();
 
-      @Override
-      public Integer generate(SolrRandomnessSource in) {
-        return increment.getAndIncrement();
-      }
-    };
+    public IncrementingIntegerSolrGen() {
+      super(Integer.class);
+    }
+
+    @Override
+    public Integer generate(RandomnessSource in) {
+      return increment.getAndIncrement();
+    }
+
+    @Override
+    public Integer generate(SolrRandomnessSource in) {
+      return increment.getAndIncrement();
+    }
   }
 
   public class IntegerDomainBuilder {

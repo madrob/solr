@@ -35,7 +35,7 @@ public class DatesDSL {
   /**
    * Generates Dates inclusively bounded between January 1, 1970, 00:00:00 GMT and new
    * Date(milliSecondsFromEpoch). The Source restricts Date generation, so that no Dates before 1970
-   * can be created. The Source is weighted so it is likely to produce new
+   * can be created. The Source is weighted, so it is likely to produce new
    * Date(millisecondsFromEpoch) one or more times.
    *
    * @param millisecondsFromEpoch the number of milliseconds from the epoch such that Dates are

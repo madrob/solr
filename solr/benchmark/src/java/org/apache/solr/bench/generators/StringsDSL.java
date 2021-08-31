@@ -58,17 +58,7 @@ public class StringsDSL {
 
   public WordListGeneratorBuilder wordList() {
     return new WordListGeneratorBuilder(
-        new SolrGen<>(
-            new SolrGen<>(String.class) {
-              @Override
-              public String generate(RandomnessSource in) {
-                return words.get(
-                    integers()
-                        .between(0, wordsSize - 1)
-                        .withDistribution(this.getDistribution())
-                        .generate(in));
-              }
-            },
+        new SolrGen<>(new WordListStringSolrGen(),
             String.class));
   }
 
@@ -98,7 +88,7 @@ public class StringsDSL {
   }
 
   /**
-   * Constructs a StringGeneratorBuilder which will build Strings composed from all defined code
+   * Constructs a StringGeneratorBuilder which will build Strings composed of all defined code
    * points
    *
    * @return a StringGeneratorBuilder
@@ -108,7 +98,7 @@ public class StringsDSL {
   }
 
   /**
-   * Constructs a StringGeneratorBuilder which will build Strings composed from all defined code
+   * Constructs a StringGeneratorBuilder which will build Strings composed of all defined code
    * points in the Basic Multilingual Plane
    *
    * @return a StringGeneratorBuilder
@@ -118,7 +108,7 @@ public class StringsDSL {
   }
 
   /**
-   * Constructs a StringGeneratorBuilder which will build Strings composed from Unicode Basic Latin
+   * Constructs a StringGeneratorBuilder which will build Strings composed of Unicode Basic Latin
    * Alphabet
    *
    * @return a StringGeneratorBuilder
@@ -136,7 +126,7 @@ public class StringsDSL {
   }
 
   /**
-   * Constructs a StringGeneratorBuilder which will build Strings composed from Unicode Ascii
+   * Constructs a StringGeneratorBuilder which will build Strings composed of Unicode Ascii
    * Alphabet
    *
    * @return a StringGeneratorBuilder
@@ -316,5 +306,20 @@ public class StringsDSL {
         return sb.toString();
       }
     };
+  }
+
+  private static class WordListStringSolrGen extends SolrGen<String> {
+    public WordListStringSolrGen() {
+      super(String.class);
+    }
+
+    @Override
+    public String generate(RandomnessSource in) {
+      return words.get(
+          integers()
+              .between(0, wordsSize - 1)
+              .withDistribution(this.getDistribution())
+              .generate(in));
+    }
   }
 }

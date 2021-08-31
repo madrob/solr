@@ -77,7 +77,7 @@ public class BenchmarkRandomSource
     double boundedValue = boundValue(value);
     // normalize boundedValue to new range
     double normalizedRange = normalizationUpperBound - normalizationLowerBound;
-    return (((boundedValue - 0) * normalizedRange) / 1) + normalizationLowerBound;
+    return (((boundedValue - 0) * normalizedRange)) + normalizationLowerBound;
   }
 
   private static double boundValue(double value) {

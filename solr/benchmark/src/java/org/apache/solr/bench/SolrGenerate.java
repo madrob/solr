@@ -216,7 +216,7 @@ public class SolrGenerate {
         throw new IllegalArgumentException("List of generators must not be empty");
       }
       /* Calculate the total unadjusted weights, and the largest common factor
-       * between all of the weights and the total, so they can be reduced to the smallest.
+       * between all the weights and the total, so they can be reduced to the smallest.
        * It ignores non-positive weights to make it easy to disable generators while developing
        * properties.
        */

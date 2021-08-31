@@ -49,7 +49,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @Measurement(time = 20, iterations = 4)
 @Fork(value = 1)
 @Timeout(time = 60)
-/** A benchmark to experiment with the performance of distributed indexing. */
+// A benchmark to experiment with the performance of distributed indexing.
 public class CloudIndexing {
 
   @State(Scope.Benchmark)
@@ -124,7 +124,7 @@ public class CloudIndexing {
 
     @Setup(Level.Trial)
     public void doSetup(MiniClusterState.MiniClusterBenchState miniClusterState) throws Exception {
-      System.setProperty("solr.mergePolicyFactory", "org.apache.solr.index.NoMergePolicyFactory");
+      System.setProperty("mergePolicyFactory", "org.apache.solr.index.NoMergePolicyFactory");
       miniClusterState.startMiniCluster(nodeCount);
       miniClusterState.createCollection(collection, numShards, numReplicas);
     }

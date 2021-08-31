@@ -21,7 +21,7 @@ import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.RandomGeneratorFactory;
 import org.apache.commons.math3.util.FastMath;
 
-/** Extension of <code>java.util.SplittableRandom</code> to implement {@link RandomGenerator}. */
+/** Extension of {@code java.util.SplittableRandom} to implement {@link RandomGenerator}. */
 public class SplittableRandomGenerator implements RandomGenerator {
 
   /** Serializable version identifier. */

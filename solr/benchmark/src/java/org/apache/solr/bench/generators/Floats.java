@@ -27,8 +27,7 @@ final class Floats {
   private static final int NEGATIVE_ZERO_CORRESPONDING_INT = Integer.MIN_VALUE;
 
   static SolrGen<Float> fromNegativeInfinityToPositiveInfinity() {
-    return (SolrGen<Float>)
-        fromNegativeInfinityToNegativeZero().mix(fromZeroToPositiveInfinity(), Float.class);
+    return fromNegativeInfinityToNegativeZero().mix(fromZeroToPositiveInfinity(), Float.class);
   }
 
   static SolrGen<Float> fromNegativeInfinityToNegativeZero() {

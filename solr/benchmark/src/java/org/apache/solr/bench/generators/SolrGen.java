@@ -98,7 +98,7 @@ public class SolrGen<T> implements Gen<T> {
       return val;
     }
 
-    return child.generate((RandomnessSource) in);
+    return child.generate(in);
   }
 
   @SuppressWarnings("unchecked")
@@ -256,7 +256,7 @@ class SolrDescribingGenerator<G> extends SolrGen<G> {
   @Override
   public G generate(SolrRandomnessSource in) {
     G val;
-    val = child.generate((RandomnessSource) in);
+    val = child.generate(in);
     return val;
   }
 

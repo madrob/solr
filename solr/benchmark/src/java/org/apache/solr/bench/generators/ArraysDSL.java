@@ -25,16 +25,6 @@ import org.apache.solr.bench.SolrGenerate;
 import org.quicktheories.api.AsString;
 import org.quicktheories.core.Gen;
 
-/**
- * A Class for creating Sources of type T[], that will generate and shrink array objects of either
- * fixed or bounded size. If fixed size, an array will be shrunk by reducing the individual items in
- * tandem. If the array is of bounded size, shrinking will begin by removing random items until the
- * array is of minimum size, at which point it will continue to shrink as if an array of fixed
- * length.
- *
- * <p>There is a possibility that the shrinker will get stuck at a local minima when one value in
- * the array shrinks to it's "smallest" value without falsifying
- */
 public class ArraysDSL {
 
   /**

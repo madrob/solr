@@ -69,7 +69,7 @@ public class DoublesDSL {
    * @return a Gen of Doubles between minInclusive and maxInclusive
    */
   public SolrGen<Double> between(double minInclusive, double maxInclusive) {
-    return (SolrGen<Double>) Doubles.between(minInclusive, maxInclusive);
+    return Doubles.between(minInclusive, maxInclusive);
   }
 
   /**

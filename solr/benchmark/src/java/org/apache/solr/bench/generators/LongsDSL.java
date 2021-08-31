@@ -21,7 +21,7 @@ import static org.apache.solr.bench.generators.SourceDSL.checkArguments;
 import org.apache.solr.bench.SolrGenerate;
 
 /**
- * A Class for creating Long Sources that will produces Longs within a set interval and will shrink
+ * A Class for creating Long Sources that will produce Longs within a set interval and will shrink
  * within this domain.
  */
 public class LongsDSL {
@@ -79,7 +79,7 @@ public class LongsDSL {
   /**
    * Generates Longs within the interval specified with an inclusive lower and upper bound.
    *
-   * <p>The Source is weighted so it is likely to generate the upper and lower limits of the domain
+   * <p>The Source is weighted, so it is likely to generate the upper and lower limits of the domain
    * one or more times.
    *
    * @param startInclusive - inclusive lower bound of domain
