@@ -27,6 +27,7 @@ import java.util.Scanner;
 import java.util.SplittableRandom;
 import org.apache.solr.bench.SolrGenerate;
 import org.apache.solr.bench.SolrRandomnessSource;
+import org.quicktheories.core.Gen;
 import org.quicktheories.core.RandomnessSource;
 import org.quicktheories.impl.SplittableRandomSource;
 
@@ -186,7 +187,7 @@ public class StringsDSL {
     private final int minCodePoint;
     private final int maxCodePoint;
     private Integer cardinalityStart;
-    private SolrGen<Integer> maxCardinality;
+    private Gen<Integer> maxCardinality;
     private int multi;
 
     private StringGeneratorBuilder(int minCodePoint, int maxCodePoint) {
@@ -225,7 +226,7 @@ public class StringsDSL {
       return this;
     }
 
-    public StringGeneratorBuilder maxCardinality(SolrGen<Integer> max) {
+    public StringGeneratorBuilder maxCardinality(Gen<Integer> max) {
       maxCardinality = max;
       return this;
     }

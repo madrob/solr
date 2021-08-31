@@ -267,6 +267,7 @@ public class SolrIndexConfig implements MapSerializable {
     }
 
     iwc.setUseCompoundFile(useCompoundFile);
+    iwc.setCommitOnClose(false); // DirectUpdateHandler handles this for Solr
 
     if (mergedSegmentWarmerInfo != null) {
       // TODO: add infostream -> normal logging system (there is an issue somewhere)

@@ -828,6 +828,7 @@ public final class SolrCore implements SolrInfoBean, Closeable {
       try {
         writer = SolrIndexWriter.create(this, "SolrCore.initIndex", indexDir, getDirectoryFactory(), true,
             getLatestSchema(), solrConfig.indexConfig, solrDelPolicy, codec);
+        writer.commit();
       } finally {
         IOUtils.closeQuietly(writer);
       }

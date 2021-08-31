@@ -19,6 +19,7 @@ package org.apache.solr.bench.generators;
 import static org.apache.solr.bench.generators.SourceDSL.checkArguments;
 
 import java.util.SplittableRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.solr.bench.SolrGenerate;
 import org.apache.solr.bench.SolrRandomnessSource;
 import org.quicktheories.core.Gen;
@@ -64,18 +65,24 @@ public class IntegersDSL {
     return between(1, Integer.MAX_VALUE, maxCardinality);
   }
 
+  /**
+   * Incrementing SolrGen. Always returns an integer greater than the previous one. You cannot count
+   * on the increment being 1.
+   *
+   * @return a SolrGen that returns an int greater than the previous
+   */
   public SolrGen<Integer> incrementing() {
     return new SolrGen<>(Integer.class) {
-      int integer = 0;
+      AtomicInteger increment = new AtomicInteger();
 
       @Override
       public Integer generate(RandomnessSource in) {
-        return integer++;
+        return increment.getAndIncrement();
       }
 
       @Override
       public Integer generate(SolrRandomnessSource in) {
-        return integer++;
+        return increment.getAndIncrement();
       }
     };
   }

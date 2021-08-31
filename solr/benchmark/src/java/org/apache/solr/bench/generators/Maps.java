@@ -24,10 +24,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.solr.bench.SolrRandomnessSource;
 import org.quicktheories.api.AsString;
+import org.quicktheories.core.Gen;
 
 public class Maps {
-  static <K, V> SolrGen<Map<K, V>> boundedMapsOf(
-      SolrGen<K> kg, SolrGen<V> vg, SolrGen<Integer> sizes) {
+  static <K, V> Gen<Map<K, V>> boundedMapsOf(Gen<K> kg, Gen<V> vg, Gen<Integer> sizes) {
     return mapsOf(kg, vg, defaultMap(), sizes);
   }
 
@@ -35,12 +35,12 @@ public class Maps {
     return Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue);
   }
 
-  static <K, V> SolrGen<Map<K, V>> mapsOf(
-      SolrGen<K> kg,
-      SolrGen<V> vg,
+  static <K, V> Gen<Map<K, V>> mapsOf(
+      Gen<K> kg,
+      Gen<V> vg,
       Collector<Map.Entry<K, V>, ?, Map<K, V>> collector,
-      SolrGen<Integer> sizes) {
-    SolrGen<Map<K, V>> gen =
+      Gen<Integer> sizes) {
+    Gen<Map<K, V>> gen =
         new SolrGen<>() {
           public Map<K, V> generate(SolrRandomnessSource prng) {
             int size = sizes.generate(prng);

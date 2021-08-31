@@ -126,6 +126,8 @@ public class MiniClusterState {
       String s = currentRelativePath.toAbsolutePath().toString();
       log("current relative path is: " + s);
 
+      System.setProperty("doNotWaitForMergesOnIWClose", "true");
+
       System.setProperty("pkiHandlerPrivateKeyPath", "");
       System.setProperty("pkiHandlerPublicKeyPath", "");
 
@@ -340,6 +342,14 @@ public class MiniClusterState {
     public void dumpCoreInfo() throws IOException {
       cluster.dumpCoreInfo(!BaseBenchState.quietLog ? System.out : new NullPrintStream());
     }
+  }
+
+  public static ModifiableSolrParams params(String... moreParams) {
+    ModifiableSolrParams params = new ModifiableSolrParams();
+    for (int i = 0; i < moreParams.length; i += 2) {
+      params.add(moreParams[i], moreParams[i + 1]);
+    }
+    return params;
   }
 
   public static ModifiableSolrParams params(ModifiableSolrParams params, String... moreParams) {

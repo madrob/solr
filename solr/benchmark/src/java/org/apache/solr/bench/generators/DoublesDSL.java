@@ -16,8 +16,6 @@
  */
 package org.apache.solr.bench.generators;
 
-import org.quicktheories.core.Gen;
-
 /**
  * A Class for creating Double Sources that will produce doubles within a set interval and will
  * shrink within this domain.
@@ -30,8 +28,8 @@ public class DoublesDSL {
    *
    * @return a Source of type Double
    */
-  public Gen<Double> all() {
-    return (Gen<Double>) Doubles.fromNegativeInfinityToPositiveInfinity();
+  public SolrGen<Double> all() {
+    return Doubles.fromNegativeInfinityToPositiveInfinity();
   }
 
   /**
@@ -40,7 +38,7 @@ public class DoublesDSL {
    *
    * @return a Source of type Double
    */
-  public Gen<Double> negative() {
+  public SolrGen<Double> negative() {
     return Doubles.negative();
   }
 
@@ -50,7 +48,7 @@ public class DoublesDSL {
    *
    * @return a Source of type Double
    */
-  public Gen<Double> positive() {
+  public SolrGen<Double> positive() {
     return Doubles.positive();
   }
 
@@ -59,7 +57,7 @@ public class DoublesDSL {
    *
    * @return a Source of type Double
    */
-  public Gen<Double> fromZeroToOne() {
+  public SolrGen<Double> fromZeroToOne() {
     return Doubles.fromZeroToOne();
   }
 
@@ -70,7 +68,7 @@ public class DoublesDSL {
    * @param maxInclusive maximum value to generate
    * @return a Gen of Doubles between minInclusive and maxInclusive
    */
-  public Gen<Double> between(double minInclusive, double maxInclusive) {
+  public SolrGen<Double> between(double minInclusive, double maxInclusive) {
     return (SolrGen<Double>) Doubles.between(minInclusive, maxInclusive);
   }
 
@@ -98,7 +96,7 @@ public class DoublesDSL {
      * @param endInclusive - inclusive upper bound of domain
      * @return a Source of type Double
      */
-    public Gen<Double> upToAndIncluding(final double endInclusive) {
+    public SolrGen<Double> upToAndIncluding(final double endInclusive) {
       return between(startInclusive, endInclusive);
     }
   }

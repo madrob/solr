@@ -170,7 +170,6 @@ public class JsonFaceting {
 
       @Setup(Level.Trial)
       public void setup() throws Exception {
-
         this.random = new SplittableRandom(BaseBenchState.getRandomSeed());
       }
     }

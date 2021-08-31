@@ -30,7 +30,7 @@ public class FloatsDSL {
    *
    * @return a Source of type Float
    */
-  public Gen<Float> all() {
+  public SolrGen<Float> all() {
     return Floats.fromNegativeInfinityToPositiveInfinity();
   }
 

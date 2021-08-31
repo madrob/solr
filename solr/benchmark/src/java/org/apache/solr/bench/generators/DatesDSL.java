@@ -28,7 +28,7 @@ import org.quicktheories.core.Gen;
  */
 public class DatesDSL {
 
-  public Gen<Date> all() {
+  public SolrGen<Date> all() {
     return Dates.withMilliSecondsBetween(0, Long.MAX_VALUE);
   }
 
@@ -81,16 +81,16 @@ public class DatesDSL {
   }
 
   static class Dates {
-
     static Gen<Date> withMilliSeconds(long milliSecondsFromEpoch) {
       return withMilliSecondsBetween(0, milliSecondsFromEpoch);
     }
 
-    static Gen<Date> withMilliSecondsBetween(
+    static SolrGen<Date> withMilliSecondsBetween(
         long milliSecondsFromEpochStartInclusive, long milliSecondsFromEpochEndInclusive) {
-      return SolrGenerate.longRange(
-              milliSecondsFromEpochStartInclusive, milliSecondsFromEpochEndInclusive)
-          .map(l -> new Date(l));
+      return (SolrGen<Date>)
+          SolrGenerate.longRange(
+                  milliSecondsFromEpochStartInclusive, milliSecondsFromEpochEndInclusive)
+              .map(l -> new Date(l), Date.class);
     }
   }
 }

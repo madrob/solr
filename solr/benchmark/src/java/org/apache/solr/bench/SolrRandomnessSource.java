@@ -17,8 +17,9 @@
 package org.apache.solr.bench;
 
 import org.apache.solr.bench.generators.Distribution;
+import org.quicktheories.core.RandomnessSource;
 
-public interface SolrRandomnessSource {
+public interface SolrRandomnessSource extends RandomnessSource {
   long next(long min, long max);
 
   SolrRandomnessSource withDistribution(Distribution distribution);

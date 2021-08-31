@@ -294,8 +294,14 @@ public class SolrIndexWriter extends IndexWriter {
   @Override
   public void close() throws IOException {
     log.debug("Closing Writer {}", name);
+
+    boolean doNotWaitForMergesOnIWClose = Boolean.getBoolean("doNotWaitForMergesOnIWClose");
     try {
-      super.close();
+      if (doNotWaitForMergesOnIWClose) {
+        super.rollback();
+      } else {
+        super.close();
+      }
     } catch (Throwable t) {
       if (t instanceof OutOfMemoryError) {
         throw (OutOfMemoryError) t;

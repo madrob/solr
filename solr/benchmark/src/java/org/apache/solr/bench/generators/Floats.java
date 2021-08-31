@@ -19,7 +19,6 @@ package org.apache.solr.bench.generators;
 import static org.apache.solr.bench.generators.SourceDSL.checkArguments;
 
 import org.apache.solr.bench.SolrGenerate;
-import org.quicktheories.core.Gen;
 
 final class Floats {
 
@@ -27,29 +26,33 @@ final class Floats {
   private static final int NEGATIVE_INFINITY_CORRESPONDING_INT = 0xff800000;
   private static final int NEGATIVE_ZERO_CORRESPONDING_INT = Integer.MIN_VALUE;
 
-  static Gen<Float> fromNegativeInfinityToPositiveInfinity() {
-    return fromNegativeInfinityToNegativeZero().mix(fromZeroToPositiveInfinity());
+  static SolrGen<Float> fromNegativeInfinityToPositiveInfinity() {
+    return (SolrGen<Float>)
+        fromNegativeInfinityToNegativeZero().mix(fromZeroToPositiveInfinity(), Float.class);
   }
 
-  static Gen<Float> fromNegativeInfinityToNegativeZero() {
+  static SolrGen<Float> fromNegativeInfinityToNegativeZero() {
     return range(NEGATIVE_ZERO_CORRESPONDING_INT, NEGATIVE_INFINITY_CORRESPONDING_INT);
   }
 
-  static Gen<Float> fromZeroToPositiveInfinity() {
+  static SolrGen<Float> fromZeroToPositiveInfinity() {
     return range(0, POSITIVE_INFINITY_CORRESPONDING_INT);
   }
 
-  static Gen<Float> fromZeroToOne() {
-    return SolrGenerate.range(0, 1 << 24).map(i -> i / (float) (1 << 24));
+  static SolrGen<Float> fromZeroToOne() {
+    return (SolrGen<Float>)
+        SolrGenerate.range(0, 1 << 24).map(i -> i / (float) (1 << 24), Float.class);
   }
 
-  static Gen<Float> between(float min, float max) {
+  static SolrGen<Float> between(float min, float max) {
     checkArguments(min <= max, "Cannot have the maximum (%s) smaller than the min (%s)", max, min);
     float adjustedMax = max - min;
-    return fromZeroToOne().map(f -> (f * adjustedMax) + min);
+    return (SolrGen<Float>) fromZeroToOne().map(f -> (f * adjustedMax) + min, Float.class);
   }
 
-  private static Gen<Float> range(int startInclusive, int endInclusive) {
-    return SolrGenerate.range(startInclusive, endInclusive).map(i -> Float.intBitsToFloat(i));
+  private static SolrGen<Float> range(int startInclusive, int endInclusive) {
+    return (SolrGen<Float>)
+        SolrGenerate.range(startInclusive, endInclusive)
+            .map(i -> Float.intBitsToFloat(i), Float.class);
   }
 }

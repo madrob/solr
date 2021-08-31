@@ -55,7 +55,7 @@ jvmArgs="-jvmArgs -Djmh.shutdownTimeout=5 -jvmArgs -Djmh.shutdownTimeout.step=1 
 gcArgs="-jvmArgs -XX:+UseG1GC -jvmArgs -XX:+ParallelRefProcEnabled"
 
 # -jvmArgs -Dlog4j2.debug 
-loggingArgs="-jvmArgs -Dlog4jConfigurationFile=./log4j2.xml -jvmArgs -Dlog4j2.is.webapp=false -jvmArgs -Dlog4j2.garbagefreeThreadContextMap=true -jvmArgs -Dlog4j2.enableDirectEncoders=true -jvmArgs -Dlog4j2.enable.threadlocals=true"
+loggingArgs="-jvmArgs -Dlog4jConfigurationFile=./log4j2-bench.xml -jvmArgs -Dlog4j2.is.webapp=false -jvmArgs -Dlog4j2.garbagefreeThreadContextMap=true -jvmArgs -Dlog4j2.enableDirectEncoders=true -jvmArgs -Dlog4j2.enable.threadlocals=true"
 
 logDir="work/solr-logs"
 

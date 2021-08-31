@@ -20,7 +20,6 @@ import static org.apache.solr.bench.generators.SourceDSL.checkArguments;
 
 import java.util.function.Function;
 import org.apache.solr.bench.SolrGenerate;
-import org.quicktheories.core.Gen;
 
 final class Doubles {
 
@@ -31,19 +30,19 @@ final class Doubles {
   private static final double DOUBLE_UNIT = 0x1.0p-53; // 1.0 / (1L << 53)
   private static final long NEGATIVE_ZERO_CORRESPONDING_LONG = Long.MIN_VALUE;
 
-  static Gen<Double> fromNegativeInfinityToPositiveInfinity() {
-    return negative().mix(positive());
+  static SolrGen<Double> fromNegativeInfinityToPositiveInfinity() {
+    return negative().mix(positive(), Double.class);
   }
 
-  static Gen<Double> negative() {
+  static SolrGen<Double> negative() {
     return range(NEGATIVE_ZERO_CORRESPONDING_LONG, NEGATIVE_INFINITY_CORRESPONDING_LONG);
   }
 
-  static Gen<Double> positive() {
+  static SolrGen<Double> positive() {
     return range(0, POSITIVE_INFINITY_CORRESPONDING_LONG);
   }
 
-  static Gen<Double> fromZeroToOne() {
+  static SolrGen<Double> fromZeroToOne() {
     return range(0, FRACTION_BITS, l -> l * DOUBLE_UNIT);
   }
 
@@ -53,12 +52,13 @@ final class Doubles {
     return (SolrGen<Double>) fromZeroToOne().map(d -> (d * adjustedMax) + min);
   }
 
-  static Gen<Double> range(long startInclusive, long endInclusive) {
+  static SolrGen<Double> range(long startInclusive, long endInclusive) {
     return range(startInclusive, endInclusive, Double::longBitsToDouble);
   }
 
-  static Gen<Double> range(
+  static SolrGen<Double> range(
       long startInclusive, long endInclusive, Function<Long, Double> conversion) {
-    return SolrGenerate.longRange(startInclusive, endInclusive).map(conversion);
+    return (SolrGen<Double>)
+        SolrGenerate.longRange(startInclusive, endInclusive).map(conversion, Double.class);
   }
 }

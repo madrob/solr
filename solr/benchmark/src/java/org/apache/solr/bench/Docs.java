@@ -18,6 +18,7 @@ package org.apache.solr.bench;
 
 import static org.apache.solr.bench.BaseBenchState.log;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -33,6 +34,7 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.SolrNamedThreadFactory;
 import org.apache.solr.common.util.SuppressForbidden;
+import org.quicktheories.core.Gen;
 import org.quicktheories.impl.BenchmarkRandomSource;
 
 /**
@@ -48,15 +50,17 @@ public class Docs {
   private final ThreadLocal<SolrRandomnessSource> random;
   private Queue<SolrInputDocument> docs = new ConcurrentLinkedQueue<>();
 
-  private final Map<String, SolrGen<?>> fields = new HashMap<>(16);
+  private final Map<String, Gen<?>> fields = new HashMap<>(16);
 
   private ExecutorService executorService;
   private int stringFields;
   private int multiStringFields;
   private int integerFields;
   private int longFields;
-
   private int booleanFields;
+  private int floatFields;
+  private int dateFields;
+  private int doubleFields;
 
   public static Docs docs() {
     return new Docs(BaseBenchState.getRandomSeed());
@@ -122,7 +126,7 @@ public class Docs {
   public SolrInputDocument inputDocument() {
     SolrInputDocument doc = new SolrInputDocument();
     SolrRandomnessSource randomSource = random.get();
-    for (Map.Entry<String, SolrGen<?>> entry : fields.entrySet()) {
+    for (Map.Entry<String, Gen<?>> entry : fields.entrySet()) {
       doc.addField(entry.getKey(), entry.getValue().generate(randomSource));
     }
 
@@ -132,14 +136,14 @@ public class Docs {
   public SolrDocument document() {
     SolrDocument doc = new SolrDocument();
     SolrRandomnessSource randomSource = random.get();
-    for (Map.Entry<String, SolrGen<?>> entry : fields.entrySet()) {
+    for (Map.Entry<String, Gen<?>> entry : fields.entrySet()) {
       doc.addField(entry.getKey(), entry.getValue().generate(randomSource));
     }
 
     return doc;
   }
 
-  public Docs field(String name, SolrGen<?> generator) {
+  public Docs field(String name, Gen<?> generator) {
     fields.put(name, generator);
     return this;
   }
@@ -156,17 +160,18 @@ public class Docs {
       fields.put("long" + (longFields++ > 0 ? longFields : "") + "_t", generator);
     } else if (Boolean.class == type) {
       fields.put("boolean" + (booleanFields++ > 0 ? booleanFields : "") + "_b", generator);
+    } else if (Float.class == type) {
+      fields.put("float" + (floatFields++ > 0 ? floatFields : "") + "_f", generator);
+    } else if (Date.class == type) {
+      fields.put("date" + (dateFields++ > 0 ? dateFields : "") + "_dt", generator);
+    } else if (Double.class == type) {
+      fields.put("double" + (doubleFields++ > 0 ? doubleFields : "") + "_d", generator);
     } else {
       throw new IllegalArgumentException("Unknown type: " + generator.type());
     }
 
     return this;
   }
-
-  //  public DocMaker addField(String name, FieldDef.FieldDefBuilder fieldDef) {
-  //    fields.put(name, new FieldDefValueGenerator(fieldDef.build()));
-  //    return this;
-  //  }
 
   public void clear() {
     docs.clear();

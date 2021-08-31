@@ -31,6 +31,7 @@ public class SolrGen<T> implements Gen<T> {
 
   protected long start;
   protected long end;
+  private RandomDataHistogram.Counts collector;
 
   protected SolrGen() {
     this(null);
@@ -53,20 +54,36 @@ public class SolrGen<T> implements Gen<T> {
   @SuppressWarnings("unchecked")
   @Override
   public T generate(RandomnessSource in) {
-    // System.out.println("gen : " + toString() + " child: " + child.toString());
-
+    T val;
     if (child == null && start == end) {
-      return generate((SolrRandomnessSource) in);
+      val = generate((SolrRandomnessSource) in);
+      if (collector != null) collector.collect(val);
+      return val;
     }
 
     if (child == null) {
-      return (T) Integer.valueOf((int) ((SolrRandomnessSource) in).next(start, end));
+      val = (T) Integer.valueOf((int) ((SolrRandomnessSource) in).next(start, end));
+      if (collector != null) collector.collect(val);
+      return val;
+    }
+
+    if (child instanceof SolrGen && in instanceof SolrRandomnessSource) {
+      val =
+          (T)
+              ((SolrGen<Object>) child)
+                  .generate(((SolrRandomnessSource) in).withDistribution(distribution));
+      if (collector != null) collector.collect(val);
+      return val;
     }
 
     if (in instanceof BenchmarkRandomSource) {
-      return child.generate(((BenchmarkRandomSource) in).withDistribution(distribution));
+      val = child.generate(((BenchmarkRandomSource) in).withDistribution(distribution));
+      if (collector != null) collector.collect(val);
+      return val;
     }
-    return child.generate(in);
+    val = child.generate(in);
+    if (collector != null) collector.collect(val);
+    return val;
   }
 
   @SuppressWarnings("unchecked")
@@ -76,11 +93,9 @@ public class SolrGen<T> implements Gen<T> {
     }
 
     if (child == null) {
-      return (T) Integer.valueOf((int) in.next(start, end));
-    }
-
-    if (child instanceof SolrGen) {
-      return (T) ((SolrGen<Object>) child).generate(in.withDistribution(distribution));
+      T val = (T) Integer.valueOf((int) in.next(start, end));
+      if (collector != null) collector.collect(val);
+      return val;
     }
 
     return child.generate((RandomnessSource) in);
@@ -102,8 +117,16 @@ public class SolrGen<T> implements Gen<T> {
     return new SolrDescribingGenerator<>(this, asString);
   }
 
+  public SolrGen<T> mix(Gen<T> rhs, Class<?> type) {
+    return mix(rhs, 50, type);
+  }
+
   public Gen<T> mix(Gen<T> rhs, int weight) {
-    return new SolrGen<T>() {
+    return mix(rhs, weight, null);
+  }
+
+  public SolrGen<T> mix(Gen<T> rhs, int weight, Class<?> type) {
+    return new SolrGen<>(type) {
       @Override
       public T generate(SolrRandomnessSource in) {
         while (true) {
@@ -129,16 +152,20 @@ public class SolrGen<T> implements Gen<T> {
   }
 
   public <R> Gen<R> map(Function<? super T, ? extends R> mapper) {
-    return new SolrGen<R>(in -> mapper.apply(generate(in)), null);
+    return map(mapper, null);
+  }
+
+  public <R> Gen<R> map(Function<? super T, ? extends R> mapper, Class<?> type) {
+    return new SolrGen<R>(in -> mapper.apply(generate(in)), type);
   }
 
   public SolrGen<T> tracked(RandomDataHistogram.Counts collector) {
-    return new TrackingGenerator<>(this, collector);
+    this.collector = collector;
+    return this;
   }
 
   @SuppressWarnings("unchecked")
   public SolrGen<T> withDistribution(Distribution distribution) {
-    // System.out.println("set dist gen : " + toString() + " child: " + child.toString());
     this.distribution = distribution;
     if (this.child instanceof SolrGen) {
       ((SolrGen<Object>) this.child).distribution = distribution;
