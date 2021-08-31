@@ -44,6 +44,5 @@
   <dynamicField name="*_f"  type="float"  indexed="false"  stored="false" />
   <dynamicField name="*_d"  type="double"  indexed="false"  stored="false" />
   <dynamicField name="*_dt"  type="date"  indexed="false"  stored="false" />
-
   <uniqueKey>id</uniqueKey>
 </schema>
