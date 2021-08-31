@@ -57,6 +57,9 @@ public class CloudIndexing {
 
     String collection = "testCollection";
 
+    @Param({"1"})
+    public int scale;
+
     @Param("4")
     int nodeCount;
 
@@ -89,7 +92,7 @@ public class CloudIndexing {
               .field(longs().all());
 
       try {
-        largeDocIterator = largeDocs.preGenerate(25000);
+        largeDocIterator = largeDocs.preGenerate(50000);
 
         smallDocs =
             docs()
@@ -99,7 +102,7 @@ public class CloudIndexing {
                 .field("int2_i", integers().all())
                 .field("long1_l", longs().all());
 
-        smallDocIterator = smallDocs.preGenerate(25000);
+        smallDocIterator = smallDocs.preGenerate(50000);
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
@@ -119,14 +122,14 @@ public class CloudIndexing {
       return smallDocIterator.next();
     }
 
-    @Setup(Level.Iteration)
+    @Setup(Level.Trial)
     public void doSetup(MiniClusterState.MiniClusterBenchState miniClusterState) throws Exception {
       System.setProperty("solr.mergePolicyFactory", "org.apache.solr.index.NoMergePolicyFactory");
       miniClusterState.startMiniCluster(nodeCount);
       miniClusterState.createCollection(collection, numShards, numReplicas);
     }
 
-    @TearDown(Level.Iteration)
+    @TearDown(Level.Trial)
     public void doTearDown(MiniClusterState.MiniClusterBenchState miniClusterState)
         throws Exception {
 

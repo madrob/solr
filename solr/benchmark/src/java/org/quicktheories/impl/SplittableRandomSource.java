@@ -17,9 +17,12 @@
 package org.quicktheories.impl;
 
 import java.util.SplittableRandom;
+import org.apache.solr.bench.SolrRandomnessSource;
+import org.apache.solr.bench.generators.Distribution;
 import org.quicktheories.core.DetatchedRandomnessSource;
 
-public class SplittableRandomSource implements ExtendedRandomnessSource {
+public class SplittableRandomSource
+    implements DetatchedRandomnessSource, ExtendedRandomnessSource, SolrRandomnessSource {
   SplittableRandom random;
 
   public SplittableRandomSource(SplittableRandom random) {
@@ -31,13 +34,17 @@ public class SplittableRandomSource implements ExtendedRandomnessSource {
     if (constraints.min() == constraints.max()) {
       throw new RuntimeException(constraints.min() + " " + constraints.max());
     }
+    return next(constraints.min(), constraints.max());
+  }
 
-    return random.nextLong(constraints.min(), constraints.max() + 1);
+  @Override
+  public long next(long min, long max) {
+    return random.nextLong(min, max);
   }
 
   @Override
   public DetatchedRandomnessSource detach() {
-    return new ConcreteDetachedSource(this);
+    return this;
   }
 
   @Override
@@ -50,4 +57,12 @@ public class SplittableRandomSource implements ExtendedRandomnessSource {
 
   @Override
   public void add(Precursor other) {}
+
+  @Override
+  public void commit() {}
+
+  @Override
+  public SolrRandomnessSource withDistribution(Distribution distribution) {
+    return this;
+  }
 }

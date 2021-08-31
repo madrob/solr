@@ -21,9 +21,9 @@ import static org.apache.solr.bench.generators.SourceDSL.checkArguments;
 import java.lang.reflect.Array;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.apache.solr.bench.SolrGenerate;
 import org.quicktheories.api.AsString;
 import org.quicktheories.core.Gen;
-import org.quicktheories.generators.Generate;
 
 /**
  * A Class for creating Sources of type T[], that will generate and shrink array objects of either
@@ -99,6 +99,7 @@ public class ArraysDSL {
       return withLengthBetween(length, length);
     }
 
+    @SuppressWarnings("unchecked")
     public Gen<T[]> withLengths(Gen<Integer> lengths) {
       return Lists.listsOf(source, Lists.arrayList(), lengths)
           .map(
@@ -129,7 +130,7 @@ public class ArraysDSL {
           minLength >= 0,
           "The length of an array cannot be negative; %s is not an accepted argument",
           minLength);
-      return withLengths(Generate.range(minLength, maxLength));
+      return withLengths(SolrGenerate.range(minLength, maxLength));
     }
   }
 

@@ -19,14 +19,18 @@ package org.apache.solr.bench.generators;
 import static org.apache.solr.bench.generators.SourceDSL.checkArguments;
 
 import java.util.Date;
+import org.apache.solr.bench.SolrGenerate;
 import org.quicktheories.core.Gen;
-import org.quicktheories.generators.Generate;
 
 /**
  * A Class for creating Date Sources that will produce Dates based on the number of milliseconds
  * since epoch
  */
 public class DatesDSL {
+
+  public Gen<Date> all() {
+    return Dates.withMilliSecondsBetween(0, Long.MAX_VALUE);
+  }
 
   /**
    * Generates Dates inclusively bounded between January 1, 1970, 00:00:00 GMT and new
@@ -84,7 +88,7 @@ public class DatesDSL {
 
     static Gen<Date> withMilliSecondsBetween(
         long milliSecondsFromEpochStartInclusive, long milliSecondsFromEpochEndInclusive) {
-      return Generate.longRange(
+      return SolrGenerate.longRange(
               milliSecondsFromEpochStartInclusive, milliSecondsFromEpochEndInclusive)
           .map(l -> new Date(l));
     }

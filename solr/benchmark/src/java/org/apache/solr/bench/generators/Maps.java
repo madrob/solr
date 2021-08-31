@@ -22,11 +22,12 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.solr.bench.SolrRandomnessSource;
 import org.quicktheories.api.AsString;
-import org.quicktheories.core.Gen;
 
 public class Maps {
-  static <K, V> Gen<Map<K, V>> boundedMapsOf(Gen<K> kg, Gen<V> vg, Gen<Integer> sizes) {
+  static <K, V> SolrGen<Map<K, V>> boundedMapsOf(
+      SolrGen<K> kg, SolrGen<V> vg, SolrGen<Integer> sizes) {
     return mapsOf(kg, vg, defaultMap(), sizes);
   }
 
@@ -34,19 +35,21 @@ public class Maps {
     return Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue);
   }
 
-  static <K, V> Gen<Map<K, V>> mapsOf(
-      Gen<K> kg,
-      Gen<V> vg,
+  static <K, V> SolrGen<Map<K, V>> mapsOf(
+      SolrGen<K> kg,
+      SolrGen<V> vg,
       Collector<Map.Entry<K, V>, ?, Map<K, V>> collector,
-      Gen<Integer> sizes) {
-    Gen<Map<K, V>> gen =
-        prng -> {
-          int size = sizes.generate(prng);
-          return Stream.generate(() -> kg.generate(prng))
-              .distinct()
-              .map(k -> mapEntry(k, vg.generate(prng)))
-              .limit(size)
-              .collect(collector);
+      SolrGen<Integer> sizes) {
+    SolrGen<Map<K, V>> gen =
+        new SolrGen<>() {
+          public Map<K, V> generate(SolrRandomnessSource prng) {
+            int size = sizes.generate(prng);
+            return Stream.generate(() -> kg.generate(prng))
+                .distinct()
+                .map(k -> mapEntry(k, vg.generate(prng)))
+                .limit(size)
+                .collect(collector);
+          }
         };
     return gen.describedAs(mapDescriber(kg::asString, vg::asString));
   }
@@ -55,7 +58,7 @@ public class Maps {
       Function<K, String> kd, Function<V, String> vd) {
     return list ->
         list.entrySet().stream()
-            .map(e -> "(" + kd.apply(e.getKey()) + "," + vd.apply(e.getValue()) + ")")
+            .map(e -> '(' + kd.apply(e.getKey()) + ',' + vd.apply(e.getValue()) + ')')
             .collect(Collectors.joining(", ", "[", "]"));
   }
 

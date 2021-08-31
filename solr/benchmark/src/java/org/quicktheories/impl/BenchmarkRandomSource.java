@@ -18,17 +18,20 @@ package org.quicktheories.impl;
 
 import org.apache.commons.math3.random.RandomDataGenerator;
 import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.solr.bench.SolrRandomnessSource;
 import org.apache.solr.bench.generators.Distribution;
 import org.quicktheories.core.DetatchedRandomnessSource;
 
-public class BenchmarkRandomSource implements ExtendedRandomnessSource {
-  RandomGenerator random;
-  RandomDataGenerator rdg = new RandomDataGenerator(random);
+public class BenchmarkRandomSource
+    implements DetatchedRandomnessSource, ExtendedRandomnessSource, SolrRandomnessSource {
+  private final RandomGenerator random;
+  private final RandomDataGenerator rdg;
 
   private org.apache.solr.bench.generators.Distribution distribution = Distribution.Uniform;
 
   public BenchmarkRandomSource(RandomGenerator random) {
     this.random = random;
+    rdg = new RandomDataGenerator(random);
   }
 
   private BenchmarkRandomSource(
@@ -40,8 +43,7 @@ public class BenchmarkRandomSource implements ExtendedRandomnessSource {
     this.distribution = distribution;
   }
 
-  public BenchmarkRandomSource withDistribution(
-      org.apache.solr.bench.generators.Distribution distribution) {
+  public BenchmarkRandomSource withDistribution(Distribution distribution) {
     if (this.distribution == distribution) {
       return this;
     }
@@ -49,26 +51,28 @@ public class BenchmarkRandomSource implements ExtendedRandomnessSource {
   }
 
   @Override
-  public long next(Constraint constraints) {
-    if (constraints.min() == constraints.max()) {
-      throw new RuntimeException(constraints.min() + " " + constraints.max());
-    }
+  public long next(long min, long max) {
     switch (distribution) {
       case Uniform:
-        return rdg.nextLong(constraints.min(), constraints.max());
+        return rdg.nextLong(min, max);
       case Zipfian:
-        return rdg.nextZipf((int) (constraints.max() - constraints.min()), 2)
-            + constraints.min()
-            - 1;
+        return rdg.nextZipf((int) (max - min), 2) + min - 1;
       case Gaussian:
-        return (int)
-            normalize(rdg.nextGaussian(.5, .125), constraints.min(), constraints.max() - 1);
+        return (int) BenchmarkRandomSource.normalize(rdg.nextGaussian(.5, .125), min, max - 1);
       default:
         throw new IllegalStateException("Unknown distribution: " + distribution);
     }
   }
 
-  private double normalize(
+  @Override
+  public long next(Constraint constraints) {
+    if (constraints.min() == constraints.max()) {
+      throw new RuntimeException(constraints.min() + " " + constraints.max());
+    }
+    return next(constraints.min(), constraints.max());
+  }
+
+  public static double normalize(
       double value, double normalizationLowerBound, double normalizationUpperBound) {
     double boundedValue = boundValue(value);
     // normalize boundedValue to new range
@@ -76,7 +80,7 @@ public class BenchmarkRandomSource implements ExtendedRandomnessSource {
     return (((boundedValue - 0) * normalizedRange) / 1) + normalizationLowerBound;
   }
 
-  private double boundValue(double value) {
+  private static double boundValue(double value) {
     double boundedValue = value;
     if (value < 0) {
       boundedValue = 0;
@@ -89,7 +93,7 @@ public class BenchmarkRandomSource implements ExtendedRandomnessSource {
 
   @Override
   public DetatchedRandomnessSource detach() {
-    return new ConcreteDetachedSource(this);
+    return this;
   }
 
   @Override
@@ -102,4 +106,7 @@ public class BenchmarkRandomSource implements ExtendedRandomnessSource {
 
   @Override
   public void add(Precursor other) {}
+
+  @Override
+  public void commit() {}
 }

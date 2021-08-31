@@ -19,8 +19,7 @@ package org.apache.solr.bench.generators;
 import static org.apache.solr.bench.generators.SourceDSL.checkArguments;
 
 import java.util.Map;
-import org.quicktheories.core.Gen;
-import org.quicktheories.generators.Generate;
+import org.apache.solr.bench.SolrGenerate;
 
 /**
  * A Class for creating Map Sources that will produce Map objects of either fixed or bounded size.
@@ -36,7 +35,7 @@ public class MapsDSL {
    * @param <V> value type to generate
    * @return a MapGeneratorBuilder of type K,V
    */
-  public <K, V> MapGeneratorBuilder<K, V> of(Gen<K> keys, Gen<V> values) {
+  public <K, V> MapGeneratorBuilder<K, V> of(SolrGen<K> keys, SolrGen<V> values) {
     return new MapGeneratorBuilder<>(keys, values);
   }
 
@@ -49,10 +48,10 @@ public class MapsDSL {
    * @param <V> value type to generate
    */
   public static class MapGeneratorBuilder<K, V> {
-    final Gen<K> kg;
-    final Gen<V> vg;
+    final SolrGen<K> kg;
+    final SolrGen<V> vg;
 
-    public MapGeneratorBuilder(final Gen<K> kg, final Gen<V> vg) {
+    public MapGeneratorBuilder(final SolrGen<K> kg, final SolrGen<V> vg) {
       this.kg = kg;
       this.vg = vg;
     }
@@ -63,7 +62,7 @@ public class MapsDSL {
      * @param size size of lists to generate
      * @return a Source of Maps of type K,V
      */
-    public Gen<Map<K, V>> ofSize(int size) {
+    public SolrGen<Map<K, V>> ofSize(int size) {
       return ofSizeBetween(size, size);
     }
 
@@ -75,9 +74,9 @@ public class MapsDSL {
      * @param maxSize inclusive maximum size of Map
      * @return a Source of Maps of type T
      */
-    public Gen<Map<K, V>> ofSizeBetween(int minSize, int maxSize) {
+    public SolrGen<Map<K, V>> ofSizeBetween(int minSize, int maxSize) {
       checkBoundedArguments(minSize, maxSize);
-      return ofSizes(Generate.range(minSize, maxSize));
+      return ofSizes(SolrGenerate.range(minSize, maxSize));
     }
 
     /**
@@ -86,7 +85,7 @@ public class MapsDSL {
      * @param sizes Sizes of maps to generate
      * @return A Source of Maps of Type T
      */
-    public Gen<Map<K, V>> ofSizes(Gen<Integer> sizes) {
+    public SolrGen<Map<K, V>> ofSizes(SolrGen<Integer> sizes) {
       return Maps.boundedMapsOf(kg, vg, sizes);
     }
   }

@@ -17,24 +17,23 @@
 package org.apache.solr.bench.generators;
 
 import java.util.function.Function;
-import org.quicktheories.core.Gen;
-import org.quicktheories.generators.CodePoints;
-import org.quicktheories.generators.Generate;
+import org.apache.solr.bench.SolrGenerate;
 
 final class Strings {
 
   static SolrGen<String> boundedNumericStrings(int startInclusive, int endInclusive) {
     return new SolrGen<>(
-        Generate.range(startInclusive, endInclusive).map(i -> i.toString()), Type.String);
+        SolrGenerate.range(startInclusive, endInclusive).map(i -> i.toString()), String.class);
   }
 
   static SolrGen<String> withCodePoints(
-      int minCodePoint, int maxCodePoint, Gen<Integer> numberOfCodePoints) {
+      int minCodePoint, int maxCodePoint, SolrGen<Integer> numberOfCodePoints) {
 
     return new SolrGen<>(
-        Generate.intArrays(numberOfCodePoints, CodePoints.codePoints(minCodePoint, maxCodePoint))
+        SolrGenerate.intArrays(
+                numberOfCodePoints, SolrGenerate.codePoints(minCodePoint, maxCodePoint))
             .map(is -> new String(is, 0, is.length)),
-        Type.String);
+        String.class);
   }
 
   static SolrGen<String> ofBoundedLengthStrings(
@@ -42,9 +41,9 @@ final class Strings {
 
     // generate strings of fixed number of code points then modify any that exceed max length
     return new SolrGen<>(
-        withCodePoints(minCodePoint, maxCodePoint, Generate.range(minLength, maxLength))
+        withCodePoints(minCodePoint, maxCodePoint, SolrGenerate.range(minLength, maxLength))
             .map(reduceToSize(maxLength)),
-        Type.String);
+        String.class);
   }
 
   private static Function<String, String> reduceToSize(int maxLength) {

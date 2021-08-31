@@ -22,6 +22,7 @@ import static org.apache.solr.bench.generators.SourceDSL.strings;
 
 import java.util.SplittableRandom;
 import java.util.concurrent.TimeUnit;
+import org.apache.solr.bench.BaseBenchState;
 import org.apache.solr.bench.Docs;
 import org.apache.solr.bench.MiniClusterState;
 import org.apache.solr.client.solrj.request.QueryRequest;
@@ -157,7 +158,7 @@ public class JsonFaceting {
               + " , f6:{type:terms, field:'int3_i', limit:1, sort:'x desc', facet:{x:'hll(int2_i)'}  } "
               + " , f7:{type:terms, field:'facet_s', limit:2, sort:'x desc', facet:{x:'missing(int4_i)'}  } "
               + " , f8:{type:terms, field:'facet_s', limit:2, sort:'x desc', facet:{x:'countvals(int4_i)'}  } "
-              + "}");
+              + '}');
 
       // MiniClusterState.log("params: " + params + "\n");
     }
@@ -169,8 +170,8 @@ public class JsonFaceting {
 
       @Setup(Level.Trial)
       public void setup() throws Exception {
-        Long seed = Long.getLong("randomSeed");
-        this.random = new SplittableRandom(seed);
+
+        this.random = new SplittableRandom(BaseBenchState.getRandomSeed());
       }
     }
   }

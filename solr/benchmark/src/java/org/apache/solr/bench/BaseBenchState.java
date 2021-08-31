@@ -16,13 +16,19 @@
  */
 package org.apache.solr.bench;
 
-import java.util.Random;
+import com.sun.management.HotSpotDiagnosticMXBean;
+import java.io.File;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.SplittableRandom;
+import javax.management.MBeanServer;
+import org.apache.commons.io.FileUtils;
 import org.apache.solr.common.util.SuppressForbidden;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.infra.BenchmarkParams;
 
 @State(Scope.Benchmark)
@@ -30,27 +36,49 @@ public class BaseBenchState {
 
   private static final long RANDOM_SEED = 6624420638116043983L;
 
-  private SplittableRandom random;
+  private static SplittableRandom random = new SplittableRandom(getInitRandomeSeed());
+
+  public static Long getRandomSeed() {
+    return random.split().nextLong();
+  }
 
   public static boolean quietLog = Boolean.getBoolean("quietLog");
 
   @SuppressForbidden(reason = "JMH uses std out for user output")
   public static void log(String value) {
     if (!quietLog) {
-      System.out.println((value.equals("") ? "" : "--> ") + value);
+      System.out.println((value.isEmpty() ? "" : "--> ") + value);
     }
   }
 
   @Setup(Level.Trial)
   public void doSetup(BenchmarkParams benchmarkParams) throws Exception {
     System.setProperty("solr.log.name", benchmarkParams.id());
-
-    Long seed = getRandomSeed();
-
-    this.random = new SplittableRandom(seed);
   }
 
-  public static Long getRandomSeed() {
+  @TearDown(Level.Trial)
+  public static void doTearDown(BenchmarkParams benchmarkParams) throws Exception {
+    String heapDump = System.getProperty("dumpheap");
+    if (heapDump != null) {
+      File file = new File(heapDump);
+      FileUtils.deleteDirectory(file);
+      file.mkdirs();
+      File dumpFile = new File(file, benchmarkParams.id() + ".hprof");
+
+      dumpHeap(dumpFile.getAbsolutePath(), true);
+    }
+  }
+
+  @SuppressForbidden(reason = "access to force heapdump")
+  public static void dumpHeap(String filePath, boolean live) throws IOException {
+    MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+    HotSpotDiagnosticMXBean mxBean =
+        ManagementFactory.newPlatformMXBeanProxy(
+            server, "com.sun.management:type=HotSpotDiagnostic", HotSpotDiagnosticMXBean.class);
+    mxBean.dumpHeap(filePath, live);
+  }
+
+  private static Long getInitRandomeSeed() {
     Long seed = Long.getLong("solr.bench.seed");
 
     if (seed == null) {
@@ -59,13 +87,6 @@ public class BaseBenchState {
 
     log("benchmark random seed: " + seed);
 
-    // set the seed used by hard to reach places
-    System.setProperty("randomSeed", Long.toString(new Random(seed).nextLong()));
-
     return seed;
-  }
-
-  public SplittableRandom getRandom() {
-    return random;
   }
 }

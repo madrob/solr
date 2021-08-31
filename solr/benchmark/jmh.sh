@@ -51,7 +51,7 @@ echo "running JMH with args: $@"
 
 # -XX:-UseBiasedLocking - should be unreflective in recent JVMs and removed in the latest.
 
-jvmArgs="-jvmArgs -Djmh.shutdownTimeout=5 -jvmArgs -XX:-UseBiasedLocking -jvmArgs -XX:+UnlockDiagnosticVMOptions -jvmArgs -XX:+DebugNonSafepoints -jvmArgs --add-opens=java.base/java.lang.reflect=ALL-UNNAMED"
+jvmArgs="-jvmArgs -Djmh.shutdownTimeout=5 -jvmArgs -Djmh.shutdownTimeout.step=1 -jvmArgs -XX:-UseBiasedLocking -jvmArgs -XX:+UnlockDiagnosticVMOptions -jvmArgs -XX:+DebugNonSafepoints -jvmArgs --add-opens=java.base/java.lang.reflect=ALL-UNNAMED"
 gcArgs="-jvmArgs -XX:+UseG1GC -jvmArgs -XX:+ParallelRefProcEnabled"
 
 # -jvmArgs -Dlog4j2.debug 

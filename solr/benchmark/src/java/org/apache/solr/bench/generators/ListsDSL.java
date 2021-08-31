@@ -22,8 +22,8 @@ import static org.apache.solr.bench.generators.SourceDSL.checkArguments;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import org.apache.solr.bench.SolrGenerate;
 import org.quicktheories.core.Gen;
-import org.quicktheories.generators.Generate;
 import org.quicktheories.generators.Lists;
 
 /**
@@ -91,7 +91,7 @@ public class ListsDSL {
      */
     public Gen<List<T>> ofSizeBetween(int minimumSize, int maximumSize) {
       checkBoundedListArguments(minimumSize, maximumSize);
-      return ofSizes(Generate.range(minimumSize, maximumSize));
+      return ofSizes(SolrGenerate.range(minimumSize, maximumSize));
     }
 
     public Gen<List<T>> ofSizes(Gen<Integer> sizes) {
@@ -146,7 +146,7 @@ public class ListsDSL {
      */
     public Gen<List<T>> ofSizeBetween(int minimumSize, int maximumSize) {
       checkBoundedListArguments(minimumSize, maximumSize);
-      return listsOf(source, collector, Generate.range(minimumSize, maximumSize));
+      return listsOf(source, collector, SolrGenerate.range(minimumSize, maximumSize));
     }
     ;
   }

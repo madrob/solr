@@ -19,15 +19,15 @@ package org.apache.solr.bench.generators;
 import static org.apache.solr.bench.generators.SourceDSL.checkArguments;
 import static org.apache.solr.bench.generators.SourceDSL.integers;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.SplittableRandom;
-import org.eclipse.jetty.io.RuntimeIOException;
+import org.apache.solr.bench.SolrGenerate;
+import org.apache.solr.bench.SolrRandomnessSource;
 import org.quicktheories.core.RandomnessSource;
-import org.quicktheories.generators.Generate;
-import org.quicktheories.impl.BenchmarkRandomSource;
 import org.quicktheories.impl.SplittableRandomSource;
 
 public class StringsDSL {
@@ -42,23 +42,23 @@ public class StringsDSL {
   private static final int wordsSize;
 
   static {
-    try {
-      words =
-          Files.readAllLines(
-              Paths.get(
-                  "src",
-                  "resources",
-                  "words.txt")); // english word list via https://github.com/dwyl/english-words
-    } catch (IOException e) {
-      throw new RuntimeIOException(e);
+    // english word list via https://github.com/dwyl/english-words
+
+    words = new ArrayList<>(1000);
+    InputStream inputStream = StringsDSL.class.getClassLoader().getResourceAsStream("words.txt");
+    try (Scanner scanner = new Scanner(inputStream, StandardCharsets.UTF_8.name())) {
+      while (scanner.hasNextLine()) {
+        words.add(scanner.nextLine());
+      }
     }
+
     wordsSize = words.size();
   }
 
   public WordListGeneratorBuilder wordList() {
     return new WordListGeneratorBuilder(
-        new SolrGen(
-            new SolrGen<String>(Type.String) {
+        new SolrGen<>(
+            new SolrGen<>(String.class) {
               @Override
               public String generate(RandomnessSource in) {
                 return words.get(
@@ -68,7 +68,7 @@ public class StringsDSL {
                         .generate(in));
               }
             },
-            Type.String));
+            String.class));
   }
 
   /**
@@ -77,7 +77,7 @@ public class StringsDSL {
    * @return a Source of type String
    */
   public SolrGen<String> numeric() {
-    return new SolrGen<>(numericBetween(Integer.MIN_VALUE, Integer.MAX_VALUE), Type.String);
+    return new SolrGen<>(numericBetween(Integer.MIN_VALUE, Integer.MAX_VALUE), String.class);
   }
 
   /**
@@ -93,7 +93,7 @@ public class StringsDSL {
         "There are no Integer values to be generated between startInclusive (%s) and endInclusive (%s)",
         startInclusive,
         endInclusive);
-    return new SolrGen<>(Strings.boundedNumericStrings(startInclusive, endInclusive), Type.String);
+    return new SolrGen<>(Strings.boundedNumericStrings(startInclusive, endInclusive), String.class);
   }
 
   /**
@@ -186,7 +186,7 @@ public class StringsDSL {
     private final int minCodePoint;
     private final int maxCodePoint;
     private Integer cardinalityStart;
-    private int maxCardinality;
+    private SolrGen<Integer> maxCardinality;
     private int multi;
 
     private StringGeneratorBuilder(int minCodePoint, int maxCodePoint) {
@@ -206,8 +206,8 @@ public class StringsDSL {
           "The number of codepoints cannot be negative; %s is not an accepted argument",
           codePoints);
       return new SolrGen<>(
-          Strings.withCodePoints(minCodePoint, maxCodePoint, Generate.constant(codePoints)),
-          Type.String);
+          Strings.withCodePoints(minCodePoint, maxCodePoint, SolrGenerate.constant(codePoints)),
+          String.class);
     }
 
     /**
@@ -221,6 +221,11 @@ public class StringsDSL {
     }
 
     public StringGeneratorBuilder maxCardinality(int max) {
+      maxCardinality = SolrGenerate.constant(max);
+      return this;
+    }
+
+    public StringGeneratorBuilder maxCardinality(SolrGen<Integer> max) {
       maxCardinality = max;
       return this;
     }
@@ -259,41 +264,50 @@ public class StringsDSL {
       SolrGen<String> strings =
           Strings.ofBoundedLengthStrings(minCodePoint, maxCodePoint, minLength, maxLength);
 
-      if (maxCardinality > 0) {
+      if (maxCardinality != null) {
         SolrGen<String> gen =
             new SolrGen<>(
-                in -> {
-                  if (cardinalityStart == null) {
-                    cardinalityStart =
-                        Generate.range(0, Integer.MAX_VALUE - maxCardinality - 1).generate(in);
+                new SolrGen<>() {
+                  public String generate(SolrRandomnessSource in) {
+                    Integer maxCard = maxCardinality.generate(in);
+
+                    if (cardinalityStart == null) {
+                      cardinalityStart =
+                          SolrGenerate.range(0, Integer.MAX_VALUE - maxCard - 1).generate(in);
+                    }
+
+                    long seed =
+                        SolrGenerate.range(cardinalityStart, cardinalityStart + maxCard - 1)
+                            .generate(in);
+                    return strings.generate(
+                        (RandomnessSource) new SplittableRandomSource(new SplittableRandom(seed)));
                   }
 
-                  long seed =
-                      Generate.range(cardinalityStart, cardinalityStart + maxCardinality - 1)
-                          .generate(in);
-                  return strings.generate(new SplittableRandomSource(new SplittableRandom(seed)));
+                  public String generate(RandomnessSource in) {
+                    return generate((SolrRandomnessSource) in);
+                  }
                 },
-                Type.String);
+                String.class);
         if (multi > 1) {
           return multiStringGen(gen, multi);
         }
-        return new SolrGen<>(gen, Type.String);
+        return new SolrGen<>(gen, String.class);
       } else {
         if (multi > 1) {
           return multiStringGen(strings, multi);
         }
-        return new SolrGen<>(strings, Type.String);
+        return new SolrGen<>(strings, String.class);
       }
     }
   }
 
   private static SolrGen<String> multiStringGen(SolrGen<String> strings, int multi) {
-    return new SolrGen<>(Type.MultiString) {
+    return new SolrGen<>(MultiString.class) {
       @Override
-      public String generate(RandomnessSource in) {
-        StringBuilder sb = new StringBuilder();
+      public String generate(SolrRandomnessSource in) {
+        StringBuilder sb = new StringBuilder(32);
         for (int i = 0; i < multi; i++) {
-          sb.append(strings.generate(((BenchmarkRandomSource) in)));
+          sb.append(strings.generate(in));
           if (i < multi - 1) {
             sb.append(' ');
           }

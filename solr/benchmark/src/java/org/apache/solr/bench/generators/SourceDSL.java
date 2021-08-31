@@ -18,17 +18,10 @@ package org.apache.solr.bench.generators;
 
 import java.util.Locale;
 import org.quicktheories.generators.ArbitraryDSL;
-import org.quicktheories.generators.ArraysDSL;
 import org.quicktheories.generators.BigDecimalsDSL;
 import org.quicktheories.generators.BigIntegersDSL;
-import org.quicktheories.generators.BooleansDSL;
 import org.quicktheories.generators.CharactersDSL;
-import org.quicktheories.generators.DatesDSL;
-import org.quicktheories.generators.DoublesDSL;
-import org.quicktheories.generators.FloatsDSL;
-import org.quicktheories.generators.ListsDSL;
 import org.quicktheories.generators.LocalDatesDSL;
-import org.quicktheories.generators.MapsDSL;
 
 public class SourceDSL {
 

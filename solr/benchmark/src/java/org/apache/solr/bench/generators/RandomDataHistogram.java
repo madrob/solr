@@ -293,14 +293,12 @@ public class RandomDataHistogram {
       return this;
     }
 
-    public void print() {
-      print(false, -1);
+    public String print() {
+      return print(false, -1);
     }
 
-    public void print(int bucketed) {
-      if (log.isInfoEnabled()) {
-        log.info("\n{}", print(false, bucketed));
-      }
+    public String print(int bucketed) {
+      return print(false, bucketed);
     }
 
     public String print(boolean sortByCounts, int bucketed) {

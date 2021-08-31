@@ -39,7 +39,7 @@ public class Tracker {
   public static String display(Object object) {
     if (object == null) return "null";
     if (object instanceof Class) {
-      return ((Class) object).getName();
+      return ((Class<?>) object).getName();
     }
     if (object instanceof Collection) {
       @SuppressWarnings("unchecked")

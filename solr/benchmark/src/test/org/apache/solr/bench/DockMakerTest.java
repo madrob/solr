@@ -17,80 +17,38 @@
 package org.apache.solr.bench;
 
 import static org.apache.solr.bench.Docs.docs;
+import static org.apache.solr.bench.generators.SourceDSL.booleans;
+import static org.apache.solr.bench.generators.SourceDSL.dates;
+import static org.apache.solr.bench.generators.SourceDSL.doubles;
+import static org.apache.solr.bench.generators.SourceDSL.floats;
 import static org.apache.solr.bench.generators.SourceDSL.integers;
+import static org.apache.solr.bench.generators.SourceDSL.longs;
+import static org.apache.solr.bench.generators.SourceDSL.maps;
 import static org.apache.solr.bench.generators.SourceDSL.strings;
 
+import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SplittableRandom;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.bench.generators.Distribution;
+import org.apache.solr.bench.generators.LazyGen;
+import org.apache.solr.bench.generators.NamedListGen;
 import org.apache.solr.bench.generators.RandomDataHistogram;
+import org.apache.solr.bench.generators.SolrGen;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
-import org.junit.Before;
 import org.junit.Test;
+import org.quicktheories.api.Pair;
+import org.quicktheories.impl.BenchmarkRandomSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DockMakerTest extends SolrTestCaseJ4 {
-
-  @Before
-  public void setup() {
-    System.setProperty("randomSeed", Long.toString(random().nextLong()));
-  }
-
-  //  @Test
-  //  public void testGenDoc() throws Exception {
-  //    SplittableRandom random = new SplittableRandom();
-  //
-  //    DocMaker docMaker = docs();
-  //    docMaker.addField(
-  //        "id",
-  //        FieldDef.FieldDefBuilder.aFieldDef()
-  //            .withContent(FieldDefValueGenerator.Content.UNIQUE_INT));
-  //
-  //    docMaker.addField(
-  //        "facet_s",
-  //        FieldDef.FieldDefBuilder.aFieldDef()
-  //            .withContent(FieldDefValueGenerator.Content.ALPHEBETIC)
-  //            .withMaxLength(64)
-  //            .withMaxCardinality(5, random));
-  //    docMaker.addField(
-  //        "facet2_s",
-  //        FieldDef.FieldDefBuilder.aFieldDef()
-  //            .withContent(FieldDefValueGenerator.Content.ALPHEBETIC)
-  //            .withMaxLength(16)
-  //            .withMaxCardinality(100, random));
-  //    docMaker.addField(
-  //        "facet3_s",
-  //        FieldDef.FieldDefBuilder.aFieldDef()
-  //            .withContent(FieldDefValueGenerator.Content.UNICODE)
-  //            .withMaxLength(128)
-  //            .withMaxCardinality(12000, random));
-  //    docMaker.addField(
-  //        "text",
-  //        FieldDef.FieldDefBuilder.aFieldDef()
-  //            .withContent(FieldDefValueGenerator.Content.ALPHEBETIC)
-  //            .withMaxLength(12)
-  //            .withMaxTokenCount(ThreadLocalRandom.current().nextInt(512) + 1));
-  //    docMaker.addField(
-  //        "int_i",
-  //
-  // FieldDef.FieldDefBuilder.aFieldDef().withContent(FieldDefValueGenerator.Content.INTEGER));
-  //    docMaker.addField(
-  //        "int2_i",
-  //        FieldDef.FieldDefBuilder.aFieldDef()
-  //            .withContent(FieldDefValueGenerator.Content.INTEGER)
-  //            .withMaxCardinality(500, random));
-  //
-  //   // docMaker.addField("zipfian_i", new ZipfianGenerator(100, random));
-  //
-  //    docMaker.addField("rnd_english_word_s", new EnglishWordGenerator(random));
-  //
-  //    for (int i = 0; i < 10; i++) {
-  //      SolrInputDocument doc = docMaker.getInputDocument(random);
-  //      System.out.println("doc:\n" + doc);
-  //    }
-  //  }
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   @Test
   public void testBasicCardinalityAlpha() throws Exception {
@@ -129,10 +87,10 @@ public class DockMakerTest extends SolrTestCaseJ4 {
             .ofLengthBetween(1, 6));
 
     HashSet<Object> values = new HashSet<>();
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 30; i++) {
       SolrInputDocument doc = docs.inputDocument();
       SolrInputField field = doc.getField("UnicodeCard3");
-      // System.out.println("field=" + doc);
+      log.info("field={}", doc);
       values.add(field.getValue().toString());
     }
 
@@ -158,7 +116,9 @@ public class DockMakerTest extends SolrTestCaseJ4 {
 
     collector.print();
 
-    // System.out.println(values);
+    if (log.isInfoEnabled()) {
+      log.info(values.toString());
+    }
   }
 
   @Test
@@ -180,7 +140,9 @@ public class DockMakerTest extends SolrTestCaseJ4 {
 
     collector.print(25);
 
-    // System.out.println(values);
+    if (log.isInfoEnabled()) {
+      log.info(values.toString());
+    }
   }
 
   @Test
@@ -198,7 +160,9 @@ public class DockMakerTest extends SolrTestCaseJ4 {
       values.add(field.getValue().toString());
     }
 
-    collector.print();
+    if (log.isInfoEnabled()) {
+      log.info(collector.print());
+    }
   }
 
   @Test
@@ -216,7 +180,9 @@ public class DockMakerTest extends SolrTestCaseJ4 {
       values.add(field.getValue().toString());
     }
 
-    collector.print();
+    if (log.isInfoEnabled()) {
+      log.info(collector.print());
+    }
   }
 
   @Test
@@ -235,6 +201,73 @@ public class DockMakerTest extends SolrTestCaseJ4 {
       SolrInputField field = doc.getField("wordList");
       values.add(field.getValue().toString());
     }
-    collector.print();
+
+    if (log.isInfoEnabled()) {
+      log.info(collector.print());
+    }
+  }
+
+  @Test
+  public void testGenDoc() {
+    SplittableRandom random = new SplittableRandom();
+
+    Docs docMaker =
+        docs()
+            .field("id", integers().incrementing())
+            .field(
+                "facet_s",
+                strings()
+                    .basicMultilingualPlaneAlphabet()
+                    .maxCardinality(integers().between(5, 16))
+                    .ofLengthBetween(1, 128))
+            .field(booleans().all());
+
+    for (int i = 0; i < 10; i++) {
+      SolrInputDocument doc = docMaker.inputDocument();
+      if (log.isInfoEnabled()) {
+        log.info("doc:\n{}", doc);
+      }
+    }
+  }
+
+  @Test
+  public void testNestedMap() throws Exception {
+    SolrGen<? extends Map<String, ?>> mapGen =
+        maps().of(getKey(), getValue(10)).ofSizeBetween(1, 300);
+
+    Map<String, ?> map =
+        mapGen.generate(
+            (SolrRandomnessSource)
+                new BenchmarkRandomSource(
+                    new SplittableRandomGenerator(BaseBenchState.getRandomSeed())));
+    if (log.isInfoEnabled()) {
+      log.info("map={}", map);
+    }
+  }
+
+  private static SolrGen<String> getKey() {
+    return strings().betweenCodePoints('a', 'z' + 1).ofLengthBetween(1, 10);
+  }
+
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private static SolrGen<?> getValue(int depth) {
+    if (depth == 0) {
+      return integers().from(1).upToAndIncluding(5000);
+    }
+    List values = new ArrayList(4);
+    values.add(
+        Pair.of(
+            5, maps().of(getKey(), new LazyGen(() -> getValue(depth - 1))).ofSizeBetween(1, 25)));
+    values.add(
+        Pair.of(
+            5,
+            new NamedListGen(
+                maps().of(getKey(), new LazyGen(() -> getValue(depth - 1))).ofSizeBetween(1, 35))));
+    values.add(Pair.of(15, integers().all()));
+    values.add(Pair.of(14, longs().all()));
+    values.add(Pair.of(13, doubles().all()));
+    values.add(Pair.of(16, floats().all()));
+    values.add(Pair.of(17, dates().all()));
+    return SolrGenerate.frequency(values);
   }
 }

@@ -131,7 +131,7 @@ public class MiniClusterState {
 
       System.setProperty("solr.default.confdir", "../server/solr/configsets/_default");
 
-      this.random = baseBenchState.getRandom();
+      this.random = new SplittableRandom(BaseBenchState.getRandomSeed());
       // not currently usable, but would enable JettySolrRunner's ill-conceived jetty.testMode and
       // allow using SSL
 

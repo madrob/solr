@@ -30,17 +30,10 @@ public class SplittableRandomGenerator implements RandomGenerator {
   private SplittableRandom random;
   private double nextGaussian;
 
-  /** Create a new JDKRandomGenerator with a default seed. */
-  public SplittableRandomGenerator() {
-    this.random = new SplittableRandom();
+  public SplittableRandomGenerator(SplittableRandom random) {
+    this.random = random;
   }
 
-  /**
-   * Create a new JDKRandomGenerator with the given seed.
-   *
-   * @param seed initial seed
-   * @since 3.6
-   */
   public SplittableRandomGenerator(long seed) {
     this.random = new SplittableRandom(seed);
   }

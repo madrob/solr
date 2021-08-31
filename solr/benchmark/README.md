@@ -61,6 +61,14 @@ You can run a benchmark with `-prof gc` to measure its allocation rate:
 
 Of particular importance is the `norm` alloc rates, which measure the allocations per operation rather than allocations per second.
 
+[
+echo 0 > /proc/sys/kernel/kptr_restrict
+echo 1 > /proc/sys/kernel/perf_event_paranoid
+
+sudo sysctl -w kernel.perf_event_paranoid=1
+sudo sysctl -w kernel.kptr_restrict=0
+]
+
 ### Using JMH Java Flight Recorder profiler
 
 JMH comes with a variety of built-in profilers. Here is an example of using JFR:

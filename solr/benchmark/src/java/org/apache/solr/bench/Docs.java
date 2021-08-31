@@ -21,21 +21,18 @@ import static org.apache.solr.bench.BaseBenchState.log;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.lucene.util.RamUsageEstimator;
+import org.apache.solr.bench.generators.MultiString;
 import org.apache.solr.bench.generators.SolrGen;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.SolrNamedThreadFactory;
 import org.apache.solr.common.util.SuppressForbidden;
-import org.quicktheories.core.Gen;
 import org.quicktheories.impl.BenchmarkRandomSource;
 
 /**
@@ -48,13 +45,10 @@ import org.quicktheories.impl.BenchmarkRandomSource;
  */
 public class Docs {
 
-  private final ThreadLocal<RandomGenerator> random;
-  private final RandomGenerator randomParent;
+  private final ThreadLocal<SolrRandomnessSource> random;
   private Queue<SolrInputDocument> docs = new ConcurrentLinkedQueue<>();
 
-  private final Map<String, Gen<?>> fields = new HashMap<>();
-
-  private static final AtomicInteger ID = new AtomicInteger();
+  private final Map<String, SolrGen<?>> fields = new HashMap<>(16);
 
   private ExecutorService executorService;
   private int stringFields;
@@ -62,25 +56,22 @@ public class Docs {
   private int integerFields;
   private int longFields;
 
+  private int booleanFields;
+
   public static Docs docs() {
-    return new Docs();
+    return new Docs(BaseBenchState.getRandomSeed());
   }
 
-  public static Docs docs(RandomGenerator random) {
-    return new Docs(random);
+  public static Docs docs(Long seed) {
+    return new Docs(seed);
   }
 
-  private Docs(RandomGenerator random) {
-    this.randomParent = random;
+  private Docs(Long seed) {
     this.random =
         ThreadLocal.withInitial(
             () ->
-                new SplittableRandomGenerator(
-                    random.nextLong())); // TODO: pluggable RandomGenerator
-  }
-
-  private Docs() {
-    this(new SplittableRandomGenerator(Long.getLong("randomSeed")));
+                new BenchmarkRandomSource(
+                    new SplittableRandomGenerator(seed))); // TODO: pluggable RandomGenerator
   }
 
   @SuppressForbidden(reason = "This module does not need to deal with logging context")
@@ -99,6 +90,7 @@ public class Docs {
               SolrInputDocument doc = Docs.this.inputDocument();
               docs.add(doc);
             } catch (Exception e) {
+              e.printStackTrace();
               executorService.shutdownNow();
               throw new RuntimeException(e);
             }
@@ -129,10 +121,9 @@ public class Docs {
 
   public SolrInputDocument inputDocument() {
     SolrInputDocument doc = new SolrInputDocument();
-
-    for (Map.Entry<String, Gen<?>> entry : fields.entrySet()) {
-      doc.addField(
-          entry.getKey(), entry.getValue().generate(new BenchmarkRandomSource(random.get())));
+    SolrRandomnessSource randomSource = random.get();
+    for (Map.Entry<String, SolrGen<?>> entry : fields.entrySet()) {
+      doc.addField(entry.getKey(), entry.getValue().generate(randomSource));
     }
 
     return doc;
@@ -140,10 +131,9 @@ public class Docs {
 
   public SolrDocument document() {
     SolrDocument doc = new SolrDocument();
-
-    for (Map.Entry<String, Gen<?>> entry : fields.entrySet()) {
-      doc.addField(
-          entry.getKey(), entry.getValue().generate(new BenchmarkRandomSource(random.get())));
+    SolrRandomnessSource randomSource = random.get();
+    for (Map.Entry<String, SolrGen<?>> entry : fields.entrySet()) {
+      doc.addField(entry.getKey(), entry.getValue().generate(randomSource));
     }
 
     return doc;
@@ -155,21 +145,19 @@ public class Docs {
   }
 
   public Docs field(SolrGen<?> generator) {
-    switch (generator.type()) {
-      case String:
-        fields.put("string" + (stringFields++ > 0 ? stringFields : "") + "_s", generator);
-        break;
-      case MultiString:
-        fields.put("text" + (multiStringFields++ > 0 ? multiStringFields : "") + "_t", generator);
-        break;
-      case Integer:
-        fields.put("int" + (integerFields++ > 0 ? integerFields : "") + "_t", generator);
-        break;
-      case Long:
-        fields.put("long" + (longFields++ > 0 ? longFields : "") + "_t", generator);
-        break;
-      default:
-        throw new IllegalArgumentException("Unknown type: " + generator.type());
+    Class type = generator.type();
+    if (String.class == type) {
+      fields.put("string" + (stringFields++ > 0 ? stringFields : "") + "_s", generator);
+    } else if (MultiString.class == type) {
+      fields.put("text" + (multiStringFields++ > 0 ? multiStringFields : "") + "_t", generator);
+    } else if (Integer.class == type) {
+      fields.put("int" + (integerFields++ > 0 ? integerFields : "") + "_t", generator);
+    } else if (Long.class == type) {
+      fields.put("long" + (longFields++ > 0 ? longFields : "") + "_t", generator);
+    } else if (Boolean.class == type) {
+      fields.put("boolean" + (booleanFields++ > 0 ? booleanFields : "") + "_b", generator);
+    } else {
+      throw new IllegalArgumentException("Unknown type: " + generator.type());
     }
 
     return this;
@@ -182,18 +170,5 @@ public class Docs {
 
   public void clear() {
     docs.clear();
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    Docs that = (Docs) o;
-    return fields.equals(that.fields);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(fields);
   }
 }

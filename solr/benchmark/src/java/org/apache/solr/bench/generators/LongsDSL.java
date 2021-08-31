@@ -18,7 +18,7 @@ package org.apache.solr.bench.generators;
 
 import static org.apache.solr.bench.generators.SourceDSL.checkArguments;
 
-import org.quicktheories.generators.Generate;
+import org.apache.solr.bench.SolrGenerate;
 
 /**
  * A Class for creating Long Sources that will produces Longs within a set interval and will shrink
@@ -92,6 +92,6 @@ public class LongsDSL {
         "There are no Long values to be generated between (%s) and (%s)",
         startInclusive,
         endInclusive);
-    return new SolrGen<>(Generate.longRange(startInclusive, endInclusive), Type.Long);
+    return new SolrGen<>(SolrGenerate.longRange(startInclusive, endInclusive), Long.class);
   }
 }

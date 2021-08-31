@@ -19,9 +19,10 @@ package org.apache.solr.bench.generators;
 import static org.apache.solr.bench.generators.SourceDSL.checkArguments;
 
 import java.util.SplittableRandom;
+import org.apache.solr.bench.SolrGenerate;
+import org.apache.solr.bench.SolrRandomnessSource;
 import org.quicktheories.core.Gen;
 import org.quicktheories.core.RandomnessSource;
-import org.quicktheories.generators.Generate;
 import org.quicktheories.impl.SplittableRandomSource;
 
 public class IntegersDSL {
@@ -64,11 +65,16 @@ public class IntegersDSL {
   }
 
   public SolrGen<Integer> incrementing() {
-    return new SolrGen<>(Type.Integer) {
+    return new SolrGen<>(Integer.class) {
       int integer = 0;
 
       @Override
       public Integer generate(RandomnessSource in) {
+        return integer++;
+      }
+
+      @Override
+      public Integer generate(SolrRandomnessSource in) {
         return integer++;
       }
     };
@@ -136,28 +142,28 @@ public class IntegersDSL {
         "There are no Integer values to be generated between (%s) and (%s)",
         startInclusive,
         endInclusive);
-    Gen<Integer> integers = Generate.range(startInclusive, endInclusive);
+    Gen<Integer> integers = SolrGenerate.range(startInclusive, endInclusive);
     if (maxCardinality > 0) {
       return new SolrGen<>(
-          new Gen<>() {
+          new SolrGen<>() {
             Integer cardinalityStart;
 
             @Override
-            public Integer generate(RandomnessSource in) {
+            public Integer generate(SolrRandomnessSource in) {
               if (cardinalityStart == null) {
                 cardinalityStart =
-                    Generate.range(0, Integer.MAX_VALUE - maxCardinality - 1).generate(in);
+                    SolrGenerate.range(0, Integer.MAX_VALUE - maxCardinality - 1).generate(in);
               }
 
               long seed =
-                  Generate.range(cardinalityStart, cardinalityStart + maxCardinality - 1)
+                  SolrGenerate.range(cardinalityStart, cardinalityStart + maxCardinality - 1)
                       .generate(in);
               return integers.generate(new SplittableRandomSource(new SplittableRandom(seed)));
             }
           },
-          Type.Integer);
+          Integer.class);
     } else {
-      return new SolrGen<>(integers, Type.Integer);
+      return new SolrGen<>(integers, Integer.class);
     }
   }
 }
