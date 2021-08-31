@@ -89,12 +89,12 @@ public class MapsDSL {
     public Gen<Map<K, V>> ofSizes(Gen<Integer> sizes) {
       return Maps.boundedMapsOf(kg, vg, sizes);
     }
-  }
 
-  private static void checkBoundedArguments(int minSize, int maxSize) {
-    checkArguments(
-        minSize <= maxSize, "The minSize (%s) is longer than the maxSize(%s)", minSize, maxSize);
-    checkSizeNotNegative(minSize);
+    private static void checkBoundedArguments(int minSize, int maxSize) {
+      checkArguments(
+          minSize <= maxSize, "The minSize (%s) is longer than the maxSize(%s)", minSize, maxSize);
+      checkSizeNotNegative(minSize);
+    }
   }
 
   private static void checkSizeNotNegative(int size) {

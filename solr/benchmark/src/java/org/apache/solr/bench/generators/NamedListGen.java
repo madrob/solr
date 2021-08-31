@@ -21,7 +21,7 @@ import org.apache.solr.common.util.NamedList;
 import org.quicktheories.core.Gen;
 import org.quicktheories.core.RandomnessSource;
 
-public class NamedListGen extends SolrGen<NamedList> {
+public class NamedListGen extends SolrGen<NamedList<?>> {
 
   private final Gen<Map<String, Object>> map;
 

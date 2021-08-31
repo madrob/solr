@@ -267,7 +267,8 @@ public class RandomDataHistogram {
 
   public static class Counts {
 
-    private final Map<List<Object>, Integer> objectToCount = new HashMap<>(32);
+    private final Map<List<Object>, Integer> objectToCount =
+        Collections.synchronizedMap(new HashMap<>(32));
     private final String label;
     private List<Tracker> entries = null;
 

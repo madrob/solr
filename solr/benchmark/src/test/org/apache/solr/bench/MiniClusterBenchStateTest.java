@@ -46,7 +46,6 @@ import org.slf4j.LoggerFactory;
 
 public class MiniClusterBenchStateTest extends SolrTestCaseJ4 {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  private Iterator<SolrInputDocument> docIt;
 
   @Test
   public void testMiniClusterState() throws Exception {
@@ -104,7 +103,7 @@ public class MiniClusterBenchStateTest extends SolrTestCaseJ4 {
             .field(doubles().all());
 
     int numDocs = 5000;
-    docIt = docs.preGenerate(numDocs);
+    Iterator<SolrInputDocument> docIt = docs.preGenerate(numDocs);
 
     miniBenchState.index(collection, docs, numDocs);
 

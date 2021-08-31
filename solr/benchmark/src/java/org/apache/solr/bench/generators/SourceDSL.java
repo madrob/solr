@@ -25,6 +25,8 @@ import org.quicktheories.generators.LocalDatesDSL;
 
 public class SourceDSL {
 
+  private SourceDSL() {}
+
   public static LongsDSL longs() {
     return new LongsDSL();
   }

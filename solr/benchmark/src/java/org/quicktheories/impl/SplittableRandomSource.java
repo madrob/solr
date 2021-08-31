@@ -23,7 +23,7 @@ import org.quicktheories.core.DetatchedRandomnessSource;
 
 public class SplittableRandomSource
     implements DetatchedRandomnessSource, ExtendedRandomnessSource, SolrRandomnessSource {
-  SplittableRandom random;
+  final SplittableRandom random;
 
   public SplittableRandomSource(SplittableRandom random) {
     this.random = random;

@@ -21,9 +21,11 @@ import org.apache.solr.bench.SolrGenerate;
 
 final class Strings {
 
+  private Strings() {}
+
   static SolrGen<String> boundedNumericStrings(int startInclusive, int endInclusive) {
     return new SolrGen<>(
-        SolrGenerate.range(startInclusive, endInclusive).map(i -> i.toString()), String.class);
+        SolrGenerate.range(startInclusive, endInclusive).map(Object::toString), String.class);
   }
 
   static SolrGen<String> withCodePoints(

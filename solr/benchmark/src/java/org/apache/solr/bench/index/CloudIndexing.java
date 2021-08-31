@@ -55,7 +55,7 @@ public class CloudIndexing {
   @State(Scope.Benchmark)
   public static class BenchState {
 
-    String collection = "testCollection";
+    static final String COLLECTION = "testCollection";
 
     @Param({"1"})
     public int scale;
@@ -72,10 +72,10 @@ public class CloudIndexing {
     @Param({"25000"})
     public int docCount;
 
-    private org.apache.solr.bench.Docs largeDocs;
+    private final org.apache.solr.bench.Docs largeDocs;
     private Iterator<SolrInputDocument> largeDocIterator;
 
-    private org.apache.solr.bench.Docs smallDocs;
+    private final org.apache.solr.bench.Docs smallDocs;
     private Iterator<SolrInputDocument> smallDocIterator;
 
     public BenchState() {
@@ -104,6 +104,7 @@ public class CloudIndexing {
 
         smallDocIterator = smallDocs.preGenerate(50000);
       } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
         throw new RuntimeException(e);
       }
     }
@@ -126,7 +127,7 @@ public class CloudIndexing {
     public void doSetup(MiniClusterState.MiniClusterBenchState miniClusterState) throws Exception {
       System.setProperty("mergePolicyFactory", "org.apache.solr.index.NoMergePolicyFactory");
       miniClusterState.startMiniCluster(nodeCount);
-      miniClusterState.createCollection(collection, numShards, numReplicas);
+      miniClusterState.createCollection(COLLECTION, numShards, numReplicas);
     }
 
     @TearDown(Level.Trial)
@@ -147,7 +148,7 @@ public class CloudIndexing {
     SolrInputDocument doc = state.getLargeDoc();
     updateRequest.add(doc);
 
-    return miniClusterState.client.request(updateRequest, state.collection);
+    return miniClusterState.client.request(updateRequest, BenchState.COLLECTION);
   }
 
   @Benchmark
@@ -160,6 +161,6 @@ public class CloudIndexing {
     SolrInputDocument doc = state.getSmallDoc();
     updateRequest.add(doc);
 
-    return miniClusterState.client.request(updateRequest, state.collection);
+    return miniClusterState.client.request(updateRequest, BenchState.COLLECTION);
   }
 }

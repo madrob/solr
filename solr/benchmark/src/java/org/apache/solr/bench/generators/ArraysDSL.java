@@ -122,10 +122,12 @@ public class ArraysDSL {
           minLength);
       return withLengths(SolrGenerate.range(minLength, maxLength));
     }
-  }
 
-  private static <T> AsString<T[]> arrayDescriber(Function<T, String> valueDescriber) {
-    return a ->
-        java.util.Arrays.stream(a).map(valueDescriber).collect(Collectors.joining(", ", "[", "]"));
+    private static <T> AsString<T[]> arrayDescriber(Function<T, String> valueDescriber) {
+      return a ->
+          java.util.Arrays.stream(a)
+              .map(valueDescriber)
+              .collect(Collectors.joining(", ", "[", "]"));
+    }
   }
 }

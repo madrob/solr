@@ -29,6 +29,8 @@ import org.quicktheories.core.Gen;
 
 public final class Lists {
 
+  private Lists() {}
+
   static <T> Gen<List<T>> listsOf(Gen<T> generator, Gen<Integer> sizes) {
     return listsOf(generator, arrayList(), sizes).mix(listsOf(generator, linkedList(), sizes));
   }

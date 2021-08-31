@@ -27,7 +27,7 @@ public class BenchmarkRandomSource
   private final RandomGenerator random;
   private final RandomDataGenerator rdg;
 
-  private org.apache.solr.bench.generators.Distribution distribution = Distribution.Uniform;
+  private org.apache.solr.bench.generators.Distribution distribution = Distribution.UNIFORM;
 
   public BenchmarkRandomSource(RandomGenerator random) {
     this.random = random;
@@ -53,12 +53,12 @@ public class BenchmarkRandomSource
   @Override
   public long next(long min, long max) {
     switch (distribution) {
-      case Uniform:
+      case UNIFORM:
         return rdg.nextLong(min, max);
-      case Zipfian:
+      case ZIPFIAN:
         return rdg.nextZipf((int) (max - min), 2) + min - 1;
-      case Gaussian:
-        return (int) BenchmarkRandomSource.normalize(rdg.nextGaussian(.5, .125), min, max - 1);
+      case GAUSSIAN:
+        return (int) BenchmarkRandomSource.normalize(rdg.nextGaussian(.5, .125), min, max - 1.0d);
       default:
         throw new IllegalStateException("Unknown distribution: " + distribution);
     }
@@ -77,7 +77,7 @@ public class BenchmarkRandomSource
     double boundedValue = boundValue(value);
     // normalize boundedValue to new range
     double normalizedRange = normalizationUpperBound - normalizationLowerBound;
-    return (((boundedValue - 0) * normalizedRange)) + normalizationLowerBound;
+    return ((boundedValue - 0) * normalizedRange) + normalizationLowerBound;
   }
 
   private static double boundValue(double value) {

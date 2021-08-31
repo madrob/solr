@@ -35,6 +35,8 @@ import org.quicktheories.impl.Constraint;
 
 public class SolrGenerate {
 
+  private SolrGenerate() {}
+
   public static <T> SolrGen<T> constant(T constant) {
     return new SolrGen<>() {
       @Override
@@ -58,11 +60,12 @@ public class SolrGenerate {
 
       @Override
       public Integer generate(RandomnessSource in) {
-        return Integer.valueOf((int) in.next(Constraint.between(startInclusive, endInclusive)));
+        return (int) in.next(Constraint.between(startInclusive, endInclusive));
       }
 
+      @Override
       public Integer generate(SolrRandomnessSource in) {
-        return Integer.valueOf((int) in.next(startInclusive, endInclusive));
+        return (int) in.next(startInclusive, endInclusive);
       }
     };
   }
@@ -76,30 +79,29 @@ public class SolrGenerate {
 
       @Override
       public Long generate(RandomnessSource in) {
-        return Long.valueOf((int) in.next(Constraint.between(startInclusive, endInclusive)));
+        return (long) (int) in.next(Constraint.between(startInclusive, endInclusive));
       }
 
+      @Override
       public Long generate(SolrRandomnessSource in) {
-        return Long.valueOf(in.next(startInclusive, endInclusive));
+        return in.next(startInclusive, endInclusive);
       }
     };
   }
 
   public static SolrGen<int[]> intArrays(SolrGen<Integer> sizes, SolrGen<Integer> contents) {
-    SolrGen<int[]> gen =
-        new SolrGen<>() {
+    return new SolrGen<>() {
 
-          public int[] generate(SolrRandomnessSource td) {
-            int size = sizes.generate(td);
-            int[] is = new int[size];
-            for (int i = 0; i != size; i++) {
-              is[i] = contents.generate(td);
-            }
-            return is;
-          }
-          ;
-        };
-    return gen;
+      @Override
+      public int[] generate(SolrRandomnessSource td) {
+        int size = sizes.generate(td);
+        int[] is = new int[size];
+        for (int i = 0; i != size; i++) {
+          is[i] = contents.generate(td);
+        }
+        return is;
+      }
+    };
   }
 
   public static SolrGen<Integer> codePoints(int startInclusive, int endInclusive) {
@@ -164,7 +166,7 @@ public class SolrGenerate {
    */
   public static <T> SolrGen<T> pick(List<T> ts) {
     Gen<Integer> index = range(0, ts.size() - 1);
-    return new SolrGen<T>(prng -> ts.get(index.generate(prng)), null);
+    return new SolrGen<>(prng -> ts.get(index.generate(prng)), null);
   }
 
   /**
@@ -180,7 +182,7 @@ public class SolrGenerate {
     SolrGen<T>[] generators = Arrays.copyOf(others, others.length + 1);
     generators[generators.length - 1] = mandatory;
     SolrGen<Integer> index = range(0, generators.length - 1);
-    return new SolrGen<T>(prng -> generators[(index.generate(prng))].generate(prng), null);
+    return new SolrGen<>(prng -> generators[(index.generate(prng))].generate(prng), null);
   }
 
   static class FrequencyGen<T> extends SolrGen<T> {
@@ -212,7 +214,7 @@ public class SolrGenerate {
      * the generator responsible for the range.
      */
     static <T> SolrGenerate.FrequencyGen<T> fromList(List<Pair<Integer, SolrGen<T>>> ts) {
-      if (ts.size() < 1) {
+      if (ts.isEmpty()) {
         throw new IllegalArgumentException("List of generators must not be empty");
       }
       /* Calculate the total unadjusted weights, and the largest common factor
@@ -280,11 +282,10 @@ public class SolrGenerate {
 
 class Retry<T> extends SolrGen<T> {
 
-  private final SolrGen<T> child;
   private final Predicate<T> assumption;
 
   Retry(SolrGen<T> child, Predicate<T> assumption) {
-    this.child = child;
+    super(child);
     this.assumption = assumption;
   }
 
@@ -302,6 +303,7 @@ class Retry<T> extends SolrGen<T> {
     }
   }
 
+  @Override
   public String asString(T t) {
     return child.asString(t);
   }

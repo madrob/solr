@@ -30,6 +30,8 @@ final class Doubles {
   private static final double DOUBLE_UNIT = 0x1.0p-53; // 1.0 / (1L << 53)
   private static final long NEGATIVE_ZERO_CORRESPONDING_LONG = Long.MIN_VALUE;
 
+  private Doubles() {}
+
   static SolrGen<Double> fromNegativeInfinityToPositiveInfinity() {
     return negative().mix(positive(), Double.class);
   }

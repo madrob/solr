@@ -23,6 +23,7 @@ import static org.apache.solr.bench.generators.SourceDSL.strings;
 
 import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.bench.generators.Distribution;
@@ -114,13 +115,13 @@ public class DockMakerTest extends SolrTestCaseJ4 {
 
     docs.field(
         "IntCard2",
-        integers().between(10, 50).tracked(collector).withDistribution(Distribution.Gaussian));
+        integers().between(10, 50).tracked(collector).withDistribution(Distribution.GAUSSIAN));
 
-    HashSet<Object> values = new HashSet<>();
+    HashSet<Integer> values = new HashSet<>();
     for (int i = 0; i < 300; i++) {
       SolrInputDocument doc = docs.inputDocument();
       SolrInputField field = doc.getField("IntCard2");
-      values.add(field.getValue().toString());
+      values.add((Integer) field.getValue());
     }
 
     collector.print(25);
@@ -138,15 +139,25 @@ public class DockMakerTest extends SolrTestCaseJ4 {
 
     docs.field("id", integers().incrementing());
 
-    HashSet<Object> values = new HashSet<>();
+    HashSet<Integer> values = new HashSet<>();
     for (int i = 0; i < 300; i++) {
       SolrInputDocument doc = docs.inputDocument();
       SolrInputField field = doc.getField("id");
-      values.add(field.getValue().toString());
+      values.add((Integer) field.getValue());
     }
 
     if (log.isInfoEnabled()) {
       log.info(collector.print());
+    }
+
+    Integer lastVal = null;
+    Iterator<Integer> it = values.iterator();
+    while (it.hasNext()) {
+      Integer val = it.next();
+      if (lastVal != null) {
+        assertTrue(val > lastVal);
+      }
+      lastVal = val;
     }
   }
 
@@ -162,11 +173,15 @@ public class DockMakerTest extends SolrTestCaseJ4 {
     for (int i = 0; i < 1; i++) {
       SolrInputDocument doc = docs.inputDocument();
       SolrInputField field = doc.getField("wordList");
-      values.add(field.getValue().toString());
+      values.add((String) field.getValue());
     }
 
     if (log.isInfoEnabled()) {
       log.info(collector.print());
+    }
+
+    for (String val : values) {
+      assertEquals(4, val.split("\\s").length);
     }
   }
 
@@ -178,7 +193,7 @@ public class DockMakerTest extends SolrTestCaseJ4 {
 
     docs.field(
         "wordList",
-        strings().wordList().withDistribution(Distribution.Zipfian).tracked(collector).multi(10));
+        strings().wordList().withDistribution(Distribution.ZIPFIAN).tracked(collector).multi(10));
 
     Set<String> values = new HashSet<>();
     for (int i = 0; i < 1; i++) {

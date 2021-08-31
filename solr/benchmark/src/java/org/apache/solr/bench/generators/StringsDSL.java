@@ -40,7 +40,7 @@ public class StringsDSL {
 
   private static final List<String> words;
 
-  private static final int wordsSize;
+  private static final int WORD_SIZE;
 
   static {
     // english word list via https://github.com/dwyl/english-words
@@ -53,13 +53,11 @@ public class StringsDSL {
       }
     }
 
-    wordsSize = words.size();
+    WORD_SIZE = words.size();
   }
 
   public WordListGeneratorBuilder wordList() {
-    return new WordListGeneratorBuilder(
-        new SolrGen<>(new WordListStringSolrGen(),
-            String.class));
+    return new WordListGeneratorBuilder(new SolrGen<>(new WordListStringSolrGen(), String.class));
   }
 
   /**
@@ -126,8 +124,7 @@ public class StringsDSL {
   }
 
   /**
-   * Constructs a StringGeneratorBuilder which will build Strings composed of Unicode Ascii
-   * Alphabet
+   * Constructs a StringGeneratorBuilder which will build Strings composed of Unicode Ascii Alphabet
    *
    * @return a StringGeneratorBuilder
    */
@@ -226,15 +223,6 @@ public class StringsDSL {
       return this;
     }
 
-    //    StringBuilder sb = new StringBuilder();
-    //                    for (int i = 0; i < base; i++) {
-    //      sb.append(strings.generate(randomness));
-    //      if (i < base - 1) {
-    //        sb.append(' ');
-    //      }
-    //    }
-    //                    return sb.toString();
-
     /**
      * Generates Strings of length bounded between minLength and maxLength inclusively.
      *
@@ -259,6 +247,7 @@ public class StringsDSL {
         SolrGen<String> gen =
             new SolrGen<>(
                 new SolrGen<>() {
+                  @Override
                   public String generate(SolrRandomnessSource in) {
                     Integer maxCard = maxCardinality.generate(in);
 
@@ -274,6 +263,7 @@ public class StringsDSL {
                         (RandomnessSource) new SplittableRandomSource(new SplittableRandom(seed)));
                   }
 
+                  @Override
                   public String generate(RandomnessSource in) {
                     return generate((SolrRandomnessSource) in);
                   }
@@ -317,7 +307,7 @@ public class StringsDSL {
     public String generate(RandomnessSource in) {
       return words.get(
           integers()
-              .between(0, wordsSize - 1)
+              .between(0, WORD_SIZE - 1)
               .withDistribution(this.getDistribution())
               .generate(in));
     }

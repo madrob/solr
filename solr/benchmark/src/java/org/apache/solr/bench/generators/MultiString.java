@@ -16,4 +16,4 @@
  */
 package org.apache.solr.bench.generators;
 
-public class MultiString {}
+public interface MultiString {}

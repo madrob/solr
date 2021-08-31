@@ -36,23 +36,23 @@ public class BaseBenchState {
 
   private static final long RANDOM_SEED = 6624420638116043983L;
 
-  private static SplittableRandom random = new SplittableRandom(getInitRandomeSeed());
+  private static final SplittableRandom random = new SplittableRandom(getInitRandomeSeed());
 
   public static Long getRandomSeed() {
     return random.split().nextLong();
   }
 
-  public static boolean quietLog = Boolean.getBoolean("quietLog");
+  public static final boolean QUIET_LOG = Boolean.getBoolean("quietLog");
 
   @SuppressForbidden(reason = "JMH uses std out for user output")
   public static void log(String value) {
-    if (!quietLog) {
+    if (!QUIET_LOG) {
       System.out.println((value.isEmpty() ? "" : "--> ") + value);
     }
   }
 
   @Setup(Level.Trial)
-  public void doSetup(BenchmarkParams benchmarkParams) throws Exception {
+  public void doSetup(BenchmarkParams benchmarkParams) {
     System.setProperty("solr.log.name", benchmarkParams.id());
   }
 

@@ -57,7 +57,7 @@ public class JsonFaceting {
   @State(Scope.Benchmark)
   public static class BenchState {
 
-    public String collection = "testCollection";
+    public static final String collection = "testCollection";
 
     @Param({"100000"})
     public int docCount;
@@ -98,8 +98,6 @@ public class JsonFaceting {
     public void setup(
         BenchmarkParams benchmarkParams, MiniClusterState.MiniClusterBenchState miniClusterState)
         throws Exception {
-
-      SplittableRandom random = miniClusterState.getRandom();
 
       System.setProperty("maxMergeAtOnce", "20");
       System.setProperty("segmentsPerTier", "20");
@@ -169,7 +167,7 @@ public class JsonFaceting {
       private SplittableRandom random;
 
       @Setup(Level.Trial)
-      public void setup() throws Exception {
+      public void setup() {
         this.random = new SplittableRandom(BaseBenchState.getRandomSeed());
       }
     }

@@ -18,6 +18,7 @@ package org.apache.solr.bench;
 
 import static org.apache.solr.bench.BaseBenchState.log;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -48,9 +49,9 @@ import org.quicktheories.impl.BenchmarkRandomSource;
 public class Docs {
 
   private final ThreadLocal<SolrRandomnessSource> random;
-  private Queue<SolrInputDocument> docs = new ConcurrentLinkedQueue<>();
+  private final Queue<SolrInputDocument> docs = new ConcurrentLinkedQueue<>();
 
-  private final Map<String, Gen<?>> fields = new HashMap<>(16);
+  private final Map<String, Gen<?>> fields = Collections.synchronizedMap(new HashMap<>(16));
 
   private ExecutorService executorService;
   private int stringFields;
@@ -149,7 +150,7 @@ public class Docs {
   }
 
   public Docs field(SolrGen<?> generator) {
-    Class type = generator.type();
+    Class<?> type = generator.type();
     if (String.class == type) {
       fields.put("string" + (stringFields++ > 0 ? stringFields : "") + "_s", generator);
     } else if (MultiString.class == type) {

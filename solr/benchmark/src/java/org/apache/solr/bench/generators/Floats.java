@@ -26,6 +26,8 @@ final class Floats {
   private static final int NEGATIVE_INFINITY_CORRESPONDING_INT = 0xff800000;
   private static final int NEGATIVE_ZERO_CORRESPONDING_INT = Integer.MIN_VALUE;
 
+  private Floats() {}
+
   static SolrGen<Float> fromNegativeInfinityToPositiveInfinity() {
     return fromNegativeInfinityToNegativeZero().mix(fromZeroToPositiveInfinity(), Float.class);
   }
@@ -51,7 +53,6 @@ final class Floats {
 
   private static SolrGen<Float> range(int startInclusive, int endInclusive) {
     return (SolrGen<Float>)
-        SolrGenerate.range(startInclusive, endInclusive)
-            .map(i -> Float.intBitsToFloat(i), Float.class);
+        SolrGenerate.range(startInclusive, endInclusive).map(Float::intBitsToFloat, Float.class);
   }
 }

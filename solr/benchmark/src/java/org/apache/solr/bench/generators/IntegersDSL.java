@@ -93,6 +93,29 @@ public class IntegersDSL {
     }
   }
 
+  private static class IntegerMaxCardinalitySolrGen extends SolrGen<Integer> {
+    private final int maxCardinality;
+    private final Gen<Integer> integers;
+    Integer cardinalityStart;
+
+    public IntegerMaxCardinalitySolrGen(int maxCardinality, Gen<Integer> integers) {
+      this.maxCardinality = maxCardinality;
+      this.integers = integers;
+    }
+
+    @Override
+    public Integer generate(SolrRandomnessSource in) {
+      if (cardinalityStart == null) {
+        cardinalityStart =
+            SolrGenerate.range(0, Integer.MAX_VALUE - maxCardinality - 1).generate(in);
+      }
+
+      long seed =
+          SolrGenerate.range(cardinalityStart, cardinalityStart + maxCardinality - 1).generate(in);
+      return integers.generate(new SplittableRandomSource(new SplittableRandom(seed)));
+    }
+  }
+
   public class IntegerDomainBuilder {
 
     private final int startInclusive;
@@ -158,23 +181,7 @@ public class IntegersDSL {
     Gen<Integer> integers = SolrGenerate.range(startInclusive, endInclusive);
     if (maxCardinality > 0) {
       return new SolrGen<>(
-          new SolrGen<>() {
-            Integer cardinalityStart;
-
-            @Override
-            public Integer generate(SolrRandomnessSource in) {
-              if (cardinalityStart == null) {
-                cardinalityStart =
-                    SolrGenerate.range(0, Integer.MAX_VALUE - maxCardinality - 1).generate(in);
-              }
-
-              long seed =
-                  SolrGenerate.range(cardinalityStart, cardinalityStart + maxCardinality - 1)
-                      .generate(in);
-              return integers.generate(new SplittableRandomSource(new SplittableRandom(seed)));
-            }
-          },
-          Integer.class);
+          new IntegerMaxCardinalitySolrGen(maxCardinality, integers), Integer.class);
     } else {
       return new SolrGen<>(integers, Integer.class);
     }

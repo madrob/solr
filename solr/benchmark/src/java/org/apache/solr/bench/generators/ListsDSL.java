@@ -108,7 +108,6 @@ public class ListsDSL {
     public TypedListGeneratorBuilder<T> ofType(Collector<T, List<T>, List<T>> collector) {
       return new TypedListGeneratorBuilder<>(source, collector);
     }
-    ;
   }
 
   /**
@@ -134,7 +133,6 @@ public class ListsDSL {
     public Gen<List<T>> ofSize(int size) {
       return ofSizeBetween(size, size);
     }
-    ;
 
     /**
      * Generates a List of objects, where the size of the List is bounded by minimumSize and
@@ -148,7 +146,6 @@ public class ListsDSL {
       checkBoundedListArguments(minimumSize, maximumSize);
       return listsOf(source, collector, SolrGenerate.range(minimumSize, maximumSize));
     }
-    ;
   }
 
   private static void checkBoundedListArguments(int minimumSize, int maximumSize) {

@@ -27,21 +27,21 @@ public class SolrGen<T> implements Gen<T> {
 
   protected final Gen<T> child;
   private final Class<?> type;
-  private Distribution distribution = Distribution.Uniform;
+  private Distribution distribution = Distribution.UNIFORM;
 
   protected long start;
   protected long end;
   private RandomDataHistogram.Counts collector;
 
   protected SolrGen() {
-    this(null);
+    child = null;
+    this.type = null;
   }
 
-  @SuppressWarnings("unchecked")
   public SolrGen(Gen<T> child, Class<?> type) {
     this.child = child;
     if (child instanceof SolrGen) {
-      ((SolrGen<Object>) child).distribution = distribution;
+      ((SolrGen<?>) child).distribution = distribution;
     }
     this.type = type;
   }
@@ -49,6 +49,11 @@ public class SolrGen<T> implements Gen<T> {
   SolrGen(Class<?> type) {
     child = null;
     this.type = type;
+  }
+
+  protected SolrGen(Gen<T> child) {
+    this.child = child;
+    this.type = null;
   }
 
   @SuppressWarnings("unchecked")
@@ -102,8 +107,8 @@ public class SolrGen<T> implements Gen<T> {
   }
 
   @SuppressWarnings("unchecked")
-  public Class type() {
-    SolrGen other = this;
+  public Class<?> type() {
+    SolrGen<?> other = this;
     while (true) {
       if (other.type == null && other.child instanceof SolrGen) {
         other = ((SolrGen<Object>) other.child);
@@ -113,6 +118,7 @@ public class SolrGen<T> implements Gen<T> {
     }
   }
 
+  @Override
   public SolrGen<T> describedAs(AsString<T> asString) {
     return new SolrDescribingGenerator<>(this, asString);
   }
@@ -121,6 +127,7 @@ public class SolrGen<T> implements Gen<T> {
     return mix(rhs, 50, type);
   }
 
+  @Override
   public Gen<T> mix(Gen<T> rhs, int weight) {
     return mix(rhs, weight, null);
   }
@@ -147,16 +154,18 @@ public class SolrGen<T> implements Gen<T> {
    * @param <R> Type to map to
    * @return A Gen of R
    */
+  @Override
   public <R> Gen<R> flatMap(Function<? super T, Gen<? extends R>> mapper) {
-    return new SolrGen<R>(in -> mapper.apply(generate(in)).generate(in), null);
+    return new SolrGen<>(in -> mapper.apply(generate(in)).generate(in), null);
   }
 
+  @Override
   public <R> Gen<R> map(Function<? super T, ? extends R> mapper) {
     return map(mapper, null);
   }
 
   public <R> Gen<R> map(Function<? super T, ? extends R> mapper, Class<?> type) {
-    return new SolrGen<R>(in -> mapper.apply(generate(in)), type);
+    return new SolrGen<>(in -> mapper.apply(generate(in)), type);
   }
 
   public SolrGen<T> tracked(RandomDataHistogram.Counts collector) {
@@ -164,11 +173,10 @@ public class SolrGen<T> implements Gen<T> {
     return this;
   }
 
-  @SuppressWarnings("unchecked")
   public SolrGen<T> withDistribution(Distribution distribution) {
     this.distribution = distribution;
     if (this.child instanceof SolrGen) {
-      ((SolrGen<Object>) this.child).distribution = distribution;
+      ((SolrGen<?>) this.child).distribution = distribution;
     }
     return this;
   }
@@ -213,6 +221,7 @@ public class SolrGen<T> implements Gen<T> {
       return val;
     }
 
+    @Override
     public SolrGen<G> withDistribution(Distribution distribution) {
       if (this.child != null) {
         throw new IllegalStateException();
@@ -238,11 +247,10 @@ public class SolrGen<T> implements Gen<T> {
 
 class SolrDescribingGenerator<G> extends SolrGen<G> {
 
-  private final Gen<G> child;
   private final AsString<G> toString;
 
   public SolrDescribingGenerator(Gen<G> child, AsString<G> toString) {
-    this.child = child;
+    super(child);
     this.toString = toString;
   }
 
@@ -260,6 +268,7 @@ class SolrDescribingGenerator<G> extends SolrGen<G> {
     return val;
   }
 
+  @Override
   public String asString(G t) {
     return toString.asString(t);
   }

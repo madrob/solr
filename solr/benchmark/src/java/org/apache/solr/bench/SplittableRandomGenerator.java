@@ -89,21 +89,21 @@ public class SplittableRandomGenerator implements RandomGenerator {
   @Override
   public double nextGaussian() {
 
-    final double random;
+    final double rnd;
     if (Double.isNaN(nextGaussian)) {
       // generate a new pair of gaussian numbers
       final double x = nextDouble();
       final double y = nextDouble();
       final double alpha = 2 * FastMath.PI * x;
       final double r = FastMath.sqrt(-2 * FastMath.log(y));
-      random = r * FastMath.cos(alpha);
+      rnd = r * FastMath.cos(alpha);
       nextGaussian = r * FastMath.sin(alpha);
     } else {
       // use the second element of the pair already generated
-      random = nextGaussian;
+      rnd = nextGaussian;
       nextGaussian = Double.NaN;
     }
 
-    return random;
+    return rnd;
   }
 }

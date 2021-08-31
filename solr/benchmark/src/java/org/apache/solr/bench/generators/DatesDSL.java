@@ -81,6 +81,9 @@ public class DatesDSL {
   }
 
   static class Dates {
+
+    private Dates() {}
+
     static Gen<Date> withMilliSeconds(long milliSecondsFromEpoch) {
       return withMilliSecondsBetween(0, milliSecondsFromEpoch);
     }
@@ -90,7 +93,7 @@ public class DatesDSL {
       return (SolrGen<Date>)
           SolrGenerate.longRange(
                   milliSecondsFromEpochStartInclusive, milliSecondsFromEpochEndInclusive)
-              .map(l -> new Date(l), Date.class);
+              .map(Date::new, Date.class);
     }
   }
 }

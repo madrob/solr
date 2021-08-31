@@ -27,6 +27,9 @@ import org.quicktheories.api.AsString;
 import org.quicktheories.core.Gen;
 
 public class Maps {
+
+  private Maps() {}
+
   static <K, V> Gen<Map<K, V>> boundedMapsOf(Gen<K> kg, Gen<V> vg, Gen<Integer> sizes) {
     return mapsOf(kg, vg, defaultMap(), sizes);
   }
@@ -42,6 +45,7 @@ public class Maps {
       Gen<Integer> sizes) {
     Gen<Map<K, V>> gen =
         new SolrGen<>() {
+          @Override
           public Map<K, V> generate(SolrRandomnessSource prng) {
             int size = sizes.generate(prng);
             return Stream.generate(() -> kg.generate(prng))
