@@ -342,6 +342,8 @@ Other Changes
 
 * SOLR-15606: Rename (deprecated) Insanity.java to NumericHidingLeafReader.java adjusting callers to match. (Christine Poerschke)
 
+* SOLR-15632: Upgraded to Caffeine Cache 3.0.4 (Mike Drob)
+
 Bug Fixes
 ---------------------
 * SOLR-14546: Fix for a relatively hard to hit issue in OverseerTaskProcessor that could lead to out of order execution
@@ -418,8 +420,7 @@ Improvements
 * SOLR-15607: Explicitly indent results in Admin Query UI by default (Olvia Falk via Eric Pugh)
 
 * SOLR-15555: Identical filter queries will no longer race to record a filterCache entry. Allows for async cache computation instead of
-  all queries contending for the same set of locks on the cache. Fixed a bug with ramBytes usage reporting on filterCache.
-  Upgraded Caffeine Cache to 2.9.2 (Mike Drob)
+  all queries contending for the same set of locks on the cache. Fixed a bug with ramBytes usage reporting on filterCache. (Mike Drob)
 
 Optimizations
 ---------------------
