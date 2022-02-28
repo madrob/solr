@@ -19,6 +19,7 @@ package org.apache.solr.cloud;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -32,12 +33,14 @@ import org.apache.solr.core.CloudConfig;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.util.LogLevel;
 import org.apache.solr.util.TimeOut;
-import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.data.Stat;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@LogLevel("org.apache.solr.common.cloud.ConnectionManager=ERROR;org.apache.solr.cloud.Overseer=ERROR")
+@LogLevel("org.apache.solr.common.cloud.ConnectionManager=ERROR;org.apache.solr.cloud.Overseer=ERROR;org.apache.solr.common.cloud.SolrZkClient=DEBUG")
 public class TestLeaderElectionZkExpiry extends SolrTestCaseJ4 {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -45,6 +48,8 @@ public class TestLeaderElectionZkExpiry extends SolrTestCaseJ4 {
   public static final String SOLRXML = "<solr></solr>";
   private static final int MAX_NODES = 16;
   private static final int MIN_NODES = 4;
+
+  private CountDownLatch foundLeader;
 
   @Test
   public void testLeaderElectionWithZkExpiry() throws Exception {
@@ -66,34 +71,64 @@ public class TestLeaderElectionZkExpiry extends SolrTestCaseJ4 {
         // Expire session every 10ms
         ScheduledFuture<?> expireTask = work.scheduleWithFixedDelay(() -> server.expire(zkController.getZkClient().getSolrZooKeeper().getSessionId()), 0, 10, TimeUnit.MILLISECONDS);
         // Stop exirations after 10s, for approximately 1000 total expirations
-        ScheduledFuture<Boolean> done = work.schedule(() -> expireTask.cancel(true), 10, TimeUnit.SECONDS);
+        ScheduledFuture<Boolean> done = work.schedule(() -> expireTask.cancel(true), 5, TimeUnit.SECONDS);
         assertTrue("Cancelled expiration tasks.", done.get());
         work.shutdown(); // shouldn't need additional wait because both tasks have completed
         log.info("Finished with session expiration phase of the test.");
 
         // ZkContoller maintains the underlying election, so looking for a leader must happen while it is still open
-        // TODO: rewrite this to use ZK watch instead of polling
-        TimeOut timeOut = new TimeOut(10, TimeUnit.SECONDS, TimeSource.NANO_TIME);
         try (SolrZkClient zc = new SolrZkClient(server.getZkAddress(), LeaderElectionTest.TIMEOUT)) {
-          boolean found = false;
-          while (timeOut.hasTimedOut() == false) {
-            try {
-              String leaderNode = OverseerCollectionConfigSetProcessor.getLeaderNode(zc);
-              if (leaderNode != null && !leaderNode.trim().isEmpty()) {
-                log.info(Overseer.OVERSEER_ELECT_LEADER + "={}", leaderNode);
-                found = true;
-                break;
+          foundLeader = new CountDownLatch(1);
+          Thread waitForLeader = new Thread(() -> {
+            Watcher watcher = new Watcher() {
+              @Override
+              public void process(WatchedEvent event) {
+                checkLeader(zc, this);
               }
-            } catch (KeeperException.NoNodeException nne) {
-              // ignore
+            };
+            checkLeader(zc, watcher);
+          }, "waitForLeader");
+          waitForLeader.start();
+
+          assertTrue("Somebody should have joined the list of electors.", foundLeader.await(5, TimeUnit.SECONDS));
+
+          // TODO: rewrite this to use ZK watch instead of polling
+          TimeOut timeout = new TimeOut(5, TimeUnit.SECONDS, TimeSource.NANO_TIME);
+          String leaderNode = null;
+          long retries = 0;
+          while (timeout.hasTimedOut() == false) {
+            leaderNode = OverseerCollectionConfigSetProcessor.getLeaderNode(zc);
+            if (leaderNode == null) {
+              retries++;
             }
           }
-          assertTrue("Timed out waiting for an overseer leader", found);
-        }
-      }
+          log.info("retries: {}", retries);
+          assertNotNull(leaderNode);
+          assertFalse("leader node should not be empty", leaderNode.trim().isEmpty());
+        } // zc
+      } // zkController
     } finally {
       cc.shutdown();
       server.shutdown();
+    }
+  }
+
+  private void checkLeader(SolrZkClient zc, Watcher watcher) {
+    final String electionPath = Overseer.OVERSEER_ELECT;
+    try {
+      Stat stat = zc.exists(electionPath + "/leader", null, true);
+      if (stat != null) {
+        log.info("Found leader, stat={}", stat);
+        foundLeader.countDown();
+      } else {
+        if (zc.getChildren(electionPath, watcher, true).contains("leader")) {
+          log.info("Found leader as child node while setting watch");
+          foundLeader.countDown();
+        }
+      }
+    } catch (Exception e) {
+      SolrZkClient.checkInterrupted(e);
+      throw new RuntimeException(e);
     }
   }
 }
